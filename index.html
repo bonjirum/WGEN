@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BNJ GEN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap');
+
+        :root {
+            --neon-cyan: #00fff2;
+            --neon-pink: #ff00ff;
+            --neon-purple: #bc13fe;
+            --bg-dark: #050b14;
+            --bg-panel: #0a1120;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-dark);
+            color: #e2e8f0;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(0, 255, 242, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(188, 19, 254, 0.05) 0%, transparent 20%);
+        }
+
+        .cyber-container {
+            background: var(--bg-panel);
+            border: 1px solid rgba(0, 255, 242, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 242, 0.1), inset 0 0 20px rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            position: relative;
+        }
+
+        /* Stile per il pop-up di notifica */
+        .cyber-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-panel);
+            border-left: 4px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 15px 25px;
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(0, 255, 242, 0.3);
+            z-index: 1000;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.75rem;
+            pointer-events: none;
+        }
+
+        .cyber-button {
+            position: relative;
+            background: #0f172a;
+            color: var(--neon-cyan);
+            border: none;
+            z-index: 1;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .cyber-button::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, var(--neon-purple), var(--neon-cyan), #002bff, var(--neon-pink), var(--neon-purple));
+            background-size: 300%;
+            z-index: -1;
+            filter: blur(4px);
+            animation: glowing-rainbow 8s linear infinite;
+            opacity: 0.6;
+            border-radius: inherit;
+        }
+
+        .cyber-button:hover:not(:disabled)::before { opacity: 1; filter: blur(6px); }
+        .cyber-button:disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); }
+
+        @keyframes glowing-rainbow {
+            0% { background-position: 0 0; }
+            100% { background-position: 300% 0; }
+        }
+
+        .cyber-input {
+            background: rgba(7, 14, 26, 0.8) !important;
+            border: 1px solid rgba(30, 41, 59, 0.7) !important;
+            color: var(--neon-cyan) !important;
+            outline: none;
+        }
+
+        @keyframes bounce-in {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .animate-fade { animation: bounce-in 0.3s ease-out; }
+        .rotate-180 { transform: rotate(180deg); }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto">
+        <header class="text-center mb-12">
+            <h1 class="text-5xl md:text-6xl font-extrabold uppercase tracking-wider"
+                style="text-shadow: 0 0 10px rgba(0,255,242,0.5); background: linear-gradient(to right, var(--neon-cyan), white, var(--neon-pink)); -webkit-background-clip: text; color: transparent;">
+                BONJI DISPREZZA TUTTI
+            </h1>
+            <p class="text-cyan-800 mt-4 font-mono uppercase tracking-widest text-sm">
+                Premi <kbd class="px-2 py-1 bg-slate-900 border border-cyan-900 rounded text-xs text-cyan-400">SPAZIO</kbd> per generare
+            </p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-8 space-y-6">
+                <div id="displayArea" class="cyber-container rounded-3xl p-10 min-h-[450px] flex flex-col items-center justify-center gap-4">
+                    <p class="text-slate-600 italic uppercase text-xs">In attesa...</p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                    <div class="flex items-center gap-3 cyber-container px-6 py-3 rounded-full">
+                        <input type="number" id="wordCount" value="1" min="1" max="10" class="bg-transparent border-none w-12 text-center text-white font-bold text-xl outline-none">
+                    </div>
+                    <button onclick="generate()" class="cyber-button px-12 py-4 rounded-full text-lg">GENERA</button>
+                    <button onclick="resetDeck()" class="cyber-button px-6 py-4 rounded-full text-xs" title="Resetta il mazzo">
+                        SHUFFLE
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-4 space-y-6">
+                <div class="cyber-container rounded-2xl p-6">
+                    <h3 class="text-[10px] text-cyan-500 font-bold uppercase mb-4 tracking-widest">Filtri Categoria</h3>
+                    <div id="tagFilters" class="flex flex-wrap gap-2"></div>
+                </div>
+                <div class="cyber-container rounded-2xl p-6 flex gap-4">
+                    <button onclick="exportData()" class="cyber-button flex-1 py-2 rounded text-[10px]">Export</button>
+                    <button onclick="document.getElementById('importFile').click()" class="cyber-button flex-1 py-2 rounded text-[10px]">Import</button>
+                    <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
+                </div>
+            </div>
+        </main>
+
+        <section class="mt-16 cyber-container rounded-3xl overflow-hidden">
+            <button onclick="toggleEditor()" class="w-full p-8 flex justify-between items-center hover:bg-cyan-950/20 transition-all">
+                <h2 class="text-xl font-bold text-cyan-500 uppercase tracking-wider">Editor Database</h2>
+                <div id="editorArrow" class="text-cyan-500 transition-transform duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+            </button>
+
+            <div id="editorContent" class="hidden px-8 pb-8 animate-fade">
+                <div class="flex flex-col lg:flex-row gap-8 mb-12 border-t border-slate-800/50 pt-8">
+                    <div class="flex-1">
+                        <label class="block text-[10px] text-cyan-600 mb-2 uppercase font-bold">Lista Parole (una per riga)</label>
+                        <textarea id="newWords" rows="3" placeholder="Mela&#10;Pera" class="cyber-input w-full rounded-xl p-4 text-sm font-mono"></textarea>
+                    </div>
+                    <div class="lg:w-1/3 space-y-4">
+                        <label class="block text-[10px] text-cyan-600 mb-2 uppercase font-bold">Tag (Separati da virgola)</label>
+                        <input type="text" id="newTags" placeholder="Es: Frutta, Dolce" class="cyber-input w-full rounded-xl p-4 text-sm font-bold">
+                        <button onclick="addWordsBulk()" class="cyber-button w-full py-4 rounded-xl font-bold">AGGIUNGI / AGGIORNA</button>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-slate-500 uppercase">Archivio Entità</h3>
+                        <div class="relative w-64">
+                            <input type="text" id="tableSearch" oninput="handleSearch()" placeholder="Cerca parola o tag..." class="cyber-input w-full rounded-lg px-4 py-2 text-xs">
+                        </div>
+                    </div>
+                    <div class="cyber-container rounded-xl border-none overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-900/80">
+                                <tr>
+                                    <th class="p-4 text-cyan-700 font-bold uppercase text-[10px]">Entità</th>
+                                    <th class="p-4 text-cyan-700 font-bold uppercase text-[10px]">Tag Associati</th>
+                                    <th class="p-4 text-cyan-700 font-bold uppercase text-[10px] text-right">Azione</th>
+                                </tr>
+                            </thead>
+                            <tbody id="wordTableBody" class="divide-y divide-slate-800/30 text-sm font-mono"></tbody>
+                        </table>
+                    </div>
+                    <div class="flex justify-between items-center pt-4 px-2">
+                        <span id="paginationInfo" class="text-[10px] text-slate-500 uppercase font-bold">Pagina 1 di 1</span>
+                        <div class="flex gap-2">
+                            <button onclick="prevPage()" id="prevBtn" class="cyber-button px-4 py-1 rounded text-[10px]">Indietro</button>
+                            <button onclick="nextPage()" id="nextBtn" class="cyber-button px-4 py-1 rounded text-[10px]">Avanti</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let words = JSON.parse(localStorage.getItem('myWords')) || [];
+        let activeTags = new Set();
+        let currentPage = 1;
+        const itemsPerPage = 5;
+        let searchQuery = "";
+
+        // LOGICA MAZZO DI CARTE (Memoria Temporanea)
+        let currentDeck = [];
+        let currentDeckTags = ""; // Per capire se il filtro è cambiato
+
+        function init() { renderTags(); renderTable(); }
+        function save() { localStorage.setItem('myWords', JSON.stringify(words)); }
+
+        function toggleEditor() {
+            const content = document.getElementById('editorContent');
+            const arrow = document.getElementById('editorArrow');
+            content.classList.toggle('hidden');
+            arrow.classList.toggle('rotate-180');
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('tableSearch').value.toLowerCase();
+            currentPage = 1;
+            renderTable();
+        }
+
+        function getFilteredWords() {
+            let filtered = [...words].reverse();
+            if (searchQuery) {
+                filtered = filtered.filter(w =>
+                    w.text.toLowerCase().includes(searchQuery) ||
+                    w.tags.some(t => t.toLowerCase().includes(searchQuery))
+                );
+            }
+            return filtered;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('wordTableBody');
+            const filtered = getFilteredWords();
+            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * itemsPerPage;
+            const paginatedItems = filtered.slice(start, start + itemsPerPage);
+
+            tbody.innerHTML = paginatedItems.map((w) => {
+                const originalIndex = words.findIndex(item => item.text === w.text);
+                const tagsHtml = w.tags.map(t => `<span class="bg-slate-900 border border-cyan-950 text-cyan-600 px-2 py-0.5 rounded text-[9px] mr-1 uppercase">${t}</span>`).join('');
+                return `
+                <tr class="hover:bg-cyan-900/5 transition group">
+                    <td class="p-4 font-bold text-slate-200">${w.text}</td>
+                    <td class="p-4">${tagsHtml}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="deleteWord(${originalIndex})" class="text-pink-900 hover:text-pink-500 opacity-40 group-hover:opacity-100 transition font-bold uppercase text-[9px]">Rimuovi</button>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('paginationInfo').innerText = `Pagina ${currentPage} di ${totalPages} (${filtered.length} risultati)`;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+        }
+
+        function prevPage() { if (currentPage > 1) { currentPage--; renderTable(); } }
+        function nextPage() {
+            const totalPages = Math.ceil(getFilteredWords().length / itemsPerPage);
+            if (currentPage < totalPages) { currentPage++; renderTable(); }
+        }
+
+        function addWordsBulk() {
+            const textInput = document.getElementById('newWords').value;
+            const lines = textInput.split(/\r?\n/).map(l => l.trim()).filter(l => l !== "");
+            const tagsInput = document.getElementById('newTags').value;
+            const finalTags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t !== "") : ['Generale'];
+
+            if (lines.length === 0) return;
+
+            lines.forEach(line => {
+                const existing = words.find(w => w.text.toLowerCase() === line.toLowerCase());
+                if (existing) existing.tags = [...new Set([...existing.tags, ...finalTags])];
+                else words.push({ text: line, tags: finalTags });
+            });
+
+            document.getElementById('newWords').value = '';
+            save();
+            renderTags();
+            renderTable();
+
+            clearDeckData(); // <-- USA QUESTO: resetta il mazzo in silenzio
+        }
+
+        function renderTags() {
+            const container = document.getElementById('tagFilters');
+            const allTags = new Set();
+            words.forEach(w => w.tags.forEach(t => allTags.add(t)));
+            const uniqueTags = [...allTags].sort();
+            container.innerHTML = uniqueTags.map(tag => {
+                const isActive = activeTags.has(tag);
+                const style = isActive ? 'bg-cyan-600 text-white border-cyan-400' : 'bg-slate-900/50 text-slate-500 border-slate-800';
+                return `<button onclick="toggleTag('${tag}')" class="px-3 py-1 rounded text-[10px] font-bold border ${style} uppercase transition-all">${tag}</button>`;
+            }).join('');
+        }
+
+        function toggleTag(tag) {
+            if (activeTags.has(tag)) activeTags.delete(tag);
+            else activeTags.add(tag);
+            renderTags();
+            // Non serve resettare qui, lo farà generate() accorgendosi del cambio filtri
+        }
+
+        // --- GESTIONE MAZZO ---
+        function playShuffleSound() {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.type = 'square'; // Suono stile "retro-game"
+            oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // Nota iniziale
+            oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1); // Salita veloce
+
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.2);
+        }
+
+        // Funzione per mostrare il pop-up in alto a destra
+        function showNotification(message) {
+            const toast = document.createElement('div');
+            toast.className = 'cyber-toast animate-fade';
+            toast.innerText = message;
+            document.body.appendChild(toast);
+
+            // Rimuove il pop-up dopo 3 secondi
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        // Funzione resetDeck AGGIORNATA
+        function clearDeckData() {
+            currentDeck = [];
+            currentDeckTags = "";
+        }
+
+        // 2. RESET MANUALE (Con feedback) - Da usare per il tasto SHUFFLE
+        function resetDeck() {
+            clearDeckData();
+            playShuffleSound();
+            showNotification("Il pool temporaneo è stato ripristinato");
+        }
+
+        function deleteWord(index) {
+          words.splice(index, 1);
+          save();
+          renderTags();
+          renderTable();
+          clearDeckData(); // <-- USA QUESTO: resetta il mazzo in silenzio
+    }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function generate() {
+            const display = document.getElementById('displayArea');
+            const count = parseInt(document.getElementById('wordCount').value);
+
+            // 1. Definiamo quali parole possono essere usate ora
+            let filtered = activeTags.size > 0 ? words.filter(w => w.tags.some(t => activeTags.has(t))) : words;
+
+            if (filtered.length === 0) {
+                display.innerHTML = `<p class="text-pink-600 font-bold text-xs uppercase">Nessuna entità trovata</p>`;
+                return;
+            }
+
+            // 2. Controllo coerenza mazzo: se i filtri sono cambiati o il database è cambiato, resetto
+            const currentTagString = Array.from(activeTags).sort().join(',');
+            if (currentTagString !== currentDeckTags) {
+                currentDeck = [];
+                currentDeckTags = currentTagString;
+            }
+
+            let results = [];
+
+            // 3. Estrazione multipla
+            for (let i = 0; i < count; i++) {
+                // Se il mazzo è vuoto, lo riempiamo e mescoliamo
+                if (currentDeck.length === 0) {
+                    currentDeck = shuffle([...filtered]);
+                }
+
+                // Peschiamo la carta in cima
+                results.push(currentDeck.pop().text);
+
+                // Se stiamo estraendo più parole (es. 3) e il mazzo finisce a metà,
+                // il mazzo si rigenera nel prossimo ciclo del loop 'for'
+            }
+
+            display.innerHTML = results.map(res => `
+                <div class="animate-fade px-6 py-4 rounded-2xl text-4xl md:text-5xl font-extrabold text-white text-center w-full max-w-2xl"
+                     style="text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-purple);">
+                    ${res}
+                </div>
+            `).join('');
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(words));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", "bonji_backup.json");
+            dl.click();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try { words = JSON.parse(e.target.result); save(); init(); resetDeck(); } catch (err) { alert("File non valido."); }
+            };
+            reader.readAsText(file);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+                e.preventDefault();
+                generate();
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>
