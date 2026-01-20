@@ -372,35 +372,36 @@
             const text = document.getElementById('newWords').value;
             const lines = text.split('\n').map(l => l.trim()).filter(l => l);
             const tagsInput = document.getElementById('newTags').value || 'generale';
-            const tags = tagsInput.split(',').map(t => t.trim().toLowerCase()).filter(t => t);
+            const newTags = tagsInput.split(',').map(t => t.trim().toLowerCase()).filter(t => t);
 
             let addedCount = 0;
-            let skippedCount = 0;
+            let updatedCount = 0;
 
-            lines.forEach(l => {
-                // Controlla se il testo esiste già (senza distinzione tra maiuscole/minuscole)
-                const exists = words.some(w => w.text.toLowerCase() === l.toLowerCase());
+            lines.forEach(lineText => {
+                // Cerca se la parola esiste già
+                const existingWord = words.find(w => w.text.toLowerCase() === lineText.toLowerCase());
 
-                if (!exists) {
-                    words.push({text: l, tags: tags});
-                    addedCount++;
+                if (existingWord) {
+                    // Se esiste, aggiungi solo i tag che non ha già
+                    newTags.forEach(tag => {
+                        if (!existingWord.tags.includes(tag)) {
+                            existingWord.tags.push(tag);
+                            updatedCount++;
+                        }
+                    });
                 } else {
-                    skippedCount++;
+                    // Se non esiste, crea la nuova voce
+                    words.push({ text: lineText, tags: [...newTags] });
+                    addedCount++;
                 }
             });
 
             document.getElementById('newWords').value = '';
             document.getElementById('newTags').value = '';
-
             save();
             init();
 
-            // Notifica personalizzata per farti sapere cosa è successo
-            if (skippedCount > 0) {
-                showNotification(`AGGIUNTI: ${addedCount} | DUPLICATI SALTATI: ${skippedCount}`);
-            } else {
-                showNotification(`${addedCount} VOCI AGGIUNTE`);
-            }
+            showNotification(`AGGIUNTI: ${addedCount} | TAG AGGIORNATI: ${updatedCount}`);
         }
 
         function renderTags() {
@@ -481,37 +482,38 @@ function generate() {
                     const importedWords = JSON.parse(e.target.result);
                     if (Array.isArray(importedWords)) {
                         let addedCount = 0;
-                        let skippedCount = 0;
+                        let updatedTagsCount = 0;
 
-                        importedWords.forEach(newW => {
-                            // Controlla se la parola esiste già (senza badare a maiuscole/minuscole)
-                            const exists = words.some(w => w.text.toLowerCase() === newW.text.toLowerCase());
+                        importedWords.forEach(importedItem => {
+                            const existingWord = words.find(w => w.text.toLowerCase() === importedItem.text.toLowerCase());
 
-                            if (!exists) {
-                                words.push(newW);
-                                addedCount++;
+                            if (existingWord) {
+                                // Unisci i tag del file con quelli esistenti evitando duplicati
+                                importedItem.tags.forEach(tag => {
+                                    const lowerTag = tag.toLowerCase();
+                                    if (!existingWord.tags.map(t => t.toLowerCase()).includes(lowerTag)) {
+                                        existingWord.tags.push(lowerTag);
+                                        updatedTagsCount++;
+                                    }
+                                });
                             } else {
-                                skippedCount++;
+                                // Aggiungi la parola nuova
+                                words.push(importedItem);
+                                addedCount++;
                             }
                         });
 
                         save();
                         init();
                         resetDeck();
-
-                        if (skippedCount > 0) {
-                            showNotification(`IMPORTATO: ${addedCount} | DUPLICATI ESCLUSI: ${skippedCount}`);
-                        } else {
-                            showNotification(`IMPORTAZIONE COMPLETATA: ${addedCount} VOCI`);
-                        }
+                        showNotification(`NUOVE VOCI: ${addedCount} | TAG UNIFICATI: ${updatedTagsCount}`);
                     }
                 } catch (err) {
                     showNotification("ERRORE NEL FORMATO DEL FILE");
-                    console.error(err);
                 }
             };
             reader.readAsText(file);
-            event.target.value = ''; // Reset per poter ricaricare lo stesso file se serve
+            event.target.value = '';
         }
 
         window.addEventListener('keydown', (e) => { if(e.code === 'Space' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) { e.preventDefault(); generate(); } });
