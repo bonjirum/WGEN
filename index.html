@@ -32,6 +32,7 @@
             backdrop-filter: blur(5px);
         }
 
+        /* --- DESIGN PULSANTI (RIPRISTINATO) --- */
         .cyber-button {
             position: relative;
             background: transparent;
@@ -43,7 +44,6 @@
             letter-spacing: 2px;
             font-weight: 600;
             overflow: hidden;
-            box-shadow: inset 0 0 10px rgba(0, 255, 242, 0.1);
             clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
             display: inline-flex;
             align-items: center;
@@ -51,10 +51,41 @@
             white-space: nowrap;
         }
 
+        /* L'effetto "sweep" di luce bianca/azzurra */
+        .cyber-button::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 242, 0.4), transparent);
+            transition: all 0.5s;
+            z-index: -1;
+        }
+
+        .cyber-button:hover:not(:disabled) {
+            color: #fff;
+            background: rgba(0, 255, 242, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 242, 0.4), inset 0 0 15px rgba(0, 255, 242, 0.2);
+            text-shadow: 0 0 8px #fff;
+            border-color: #fff;
+        }
+
+        .cyber-button:hover:not(:disabled)::before { left: 100%; }
+
         .button-primary {
             color: var(--neon-pink) !important;
             border-color: var(--neon-pink) !important;
         }
+        .button-primary::before {
+            background: linear-gradient(90deg, transparent, rgba(255, 0, 255, 0.4), transparent);
+        }
+        .button-primary:hover:not(:disabled) {
+            background: rgba(255, 0, 255, 0.1) !important;
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.5) !important;
+            border-color: #fff !important;
+        }
+
+        .cyber-button:disabled { opacity: 0.2; cursor: not-allowed; clip-path: none; }
 
         .cyber-toast {
             position: fixed; top: 20px; right: 20px;
@@ -68,7 +99,7 @@
         #editorModal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(5, 11, 20, 0.98); z-index: 100;
-            display: none; overflow-y: auto; padding: 1rem;
+            display: none; overflow-y: auto; padding: 2rem;
         }
 
         .cyber-input {
@@ -108,9 +139,9 @@
                                    class="bg-transparent border-none w-10 text-center text-white font-bold text-xl outline-none focus:ring-0">
                             <button onclick="adjustCount(1)" class="w-8 h-8 flex items-center justify-center text-cyan-500 hover:text-white font-bold text-xl">+</button>
                         </div>
-                        <button onclick="generate()" class="cyber-button button-primary px-8 py-4 text-lg flex-1 sm:flex-none h-[58px]">GENERA</button>
+                        <button onclick="generate()" class="cyber-button button-primary px-12 py-4 text-lg flex-1 sm:flex-none h-[58px]">GENERA</button>
                     </div>
-                    <button onclick="resetDeck()" class="cyber-button px-6 py-4 text-xs h-[58px] w-full sm:w-auto">SHUFFLE</button>
+                    <button onclick="resetDeck()" class="cyber-button px-8 py-4 text-xs h-[58px] w-full sm:w-auto">SHUFFLE</button>
                 </div>
             </div>
 
@@ -121,11 +152,14 @@
                 </div>
                 <div class="space-y-4">
                     <button onclick="openEditor()" class="cyber-button w-full py-4 text-sm">Apri Database</button>
-                    <div class="flex gap-4">
-                        <button onclick="exportData()" class="cyber-button flex-1 py-2 text-[10px]">Export</button>
-                        <button onclick="document.getElementById('importFile').click()" class="cyber-button flex-1 py-2 text-[10px]">Import</button>
-                        <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="exportData()" class="cyber-button py-2 text-[10px]">Export</button>
+                        <button onclick="document.getElementById('importFile').click()" class="cyber-button py-2 text-[10px]">Import</button>
                     </div>
+                    <button onclick="loadDefaultDB()" class="cyber-button w-full py-3 text-[10px] border-dashed border-cyan-800">
+                        Carica DB Default
+                    </button>
+                    <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
                 </div>
             </div>
         </main>
@@ -143,20 +177,15 @@
                     <textarea id="newWords" rows="4" placeholder="Inserisci entità (una per riga)..." class="cyber-input w-full rounded-xl p-4 text-sm font-mono h-32"></textarea>
                 </div>
                 <div class="space-y-4">
-                    <div class="text-[10px] text-slate-500 uppercase font-bold mb-1">Seleziona Tag Esistenti (Toggle):</div>
-                    <div id="quickSelectTags" class="flex flex-wrap gap-1 mb-2 max-h-24 overflow-y-auto p-2 bg-slate-900/50 rounded-lg"></div>
-
-                    <input type="text" id="newTags" placeholder="Tag (es: Tag1, Tag2)" class="cyber-input w-full rounded-xl p-4 text-sm font-bold">
+                    <input type="text" id="newTags" placeholder="Tag (es: Rap, Drill)" class="cyber-input w-full rounded-xl p-4 text-sm font-bold">
                     <button onclick="addWordsBulk()" class="cyber-button w-full py-4 font-bold">AGGIUNGI</button>
                 </div>
             </div>
 
             <div class="cyber-container rounded-2xl p-6">
-                <div class="space-y-4 mb-8">
-                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <input type="text" id="tableSearch" oninput="handleTableSearch()" placeholder="Cerca nel database..." class="cyber-input w-full sm:w-80 rounded-lg px-4 py-2 text-xs">
-                        <div id="archiveTagFilters" class="flex flex-wrap gap-2"></div>
-                    </div>
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                    <input type="text" id="tableSearch" oninput="handleTableSearch()" placeholder="Cerca..." class="cyber-input w-full sm:w-80 rounded-lg px-4 py-2 text-xs">
+                    <div id="archiveTagFilters" class="flex flex-wrap gap-2"></div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
@@ -171,10 +200,10 @@
                     </table>
                 </div>
                 <div class="flex justify-between items-center mt-6">
-                    <span id="paginationInfo" class="text-[10px] text-slate-500 font-bold uppercase">Pagina 1</span>
+                    <span id="paginationInfo" class="text-[10px] text-slate-500 font-bold uppercase"></span>
                     <div class="flex gap-2">
-                        <button onclick="prevPage()" id="prevBtn" class="cyber-button px-4 py-1 text-[10px]">Indietro</button>
-                        <button onclick="nextPage()" id="nextBtn" class="cyber-button px-4 py-1 text-[10px]">Avanti</button>
+                        <button onclick="prevPage()" class="cyber-button px-4 py-1 text-[10px]">Indietro</button>
+                        <button onclick="nextPage()" class="cyber-button px-4 py-1 text-[10px]">Avanti</button>
                     </div>
                 </div>
             </div>
@@ -189,33 +218,33 @@
         let itemsPerPage = 12;
         let searchQuery = "";
         let currentDeck = [];
-        let lastUsedTagsKey = ""; // Per tracciare il cambio dei filtri
-        let editingTagIndex = null;
-
-        function cleanExistingTags() {
-            words.forEach(w => { w.tags = w.tags.map(t => t.toLowerCase()); });
-            save();
-        }
-
-        function init() {
-            cleanExistingTags();
-            renderTags();
-            renderArchiveSearchTags();
-            renderTable();
-            updateQuickSelect();
-        }
+        let lastUsedTagsKey = "";
 
         function save() { localStorage.setItem('myWords', JSON.stringify(words)); }
+        function init() { renderTags(); renderArchiveSearchTags(); renderTable(); }
+
+        async function loadDefaultDB() {
+            try {
+                const response = await fetch('db-argomenti-v1.json');
+                if (!response.ok) throw new Error();
+                words = await response.json();
+                save(); init(); resetDeck();
+                showNotification("DATABASE DEFAULT CARICATO");
+            } catch (err) { showNotification("ERRORE: FILE db-argomenti-v1.json NON TROVATO"); }
+        }
 
         function openEditor() {
             document.getElementById('editorModal').style.display = 'block';
             document.body.style.overflow = 'hidden';
-            renderArchiveSearchTags();
-            renderTable();
-            updateQuickSelect();
+            init();
         }
 
         function closeEditor() { document.getElementById('editorModal').style.display = 'none'; document.body.style.overflow = 'auto'; }
+
+        function showNotification(m) {
+            const t = document.createElement('div'); t.className = 'cyber-toast animate-fade'; t.innerText = m;
+            document.body.appendChild(t); setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 3000);
+        }
 
         function adjustCount(val) {
             const input = document.getElementById('wordCount');
@@ -223,60 +252,9 @@
             if (n >= 1 && n <= 10) input.value = n;
         }
 
-        function showNotification(m) {
-            const t = document.createElement('div'); t.className = 'cyber-toast animate-fade'; t.innerText = m;
-            document.body.appendChild(t); setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 3000);
-        }
-
-        function playShuffleSound() {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator(); const g = ctx.createGain();
-                osc.type = 'square'; osc.frequency.setValueAtTime(440, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
-                g.gain.setValueAtTime(0.1, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-                osc.connect(g); g.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.2);
-            } catch(e) {}
-        }
-
-        function resetDeck() { currentDeck = []; playShuffleSound(); showNotification("POOL RIPRISTINATO / SHUFFLE OK"); }
+        function resetDeck() { currentDeck = []; lastUsedTagsKey = ""; showNotification("POOL RIPRISTINATO"); }
 
         function handleTableSearch() { searchQuery = document.getElementById('tableSearch').value.toLowerCase(); currentPage = 1; renderTable(); }
-
-        function toggleArchiveSearchTag(tag) {
-            if (archiveSearchTags.has(tag)) archiveSearchTags.delete(tag); else archiveSearchTags.add(tag);
-            currentPage = 1; renderArchiveSearchTags(); renderTable();
-        }
-
-        function renderArchiveSearchTags() {
-            const container = document.getElementById('archiveTagFilters');
-            const allTags = new Set();
-            words.forEach(w => w.tags.forEach(t => allTags.add(t)));
-            container.innerHTML = [...allTags].sort().map(tag => {
-                const active = archiveSearchTags.has(tag);
-                return `<button onclick="toggleArchiveSearchTag('${tag}')" class="px-2 py-1 rounded text-[9px] font-bold border transition-all uppercase ${active ? 'bg-cyan-500 text-black border-cyan-300' : 'bg-slate-900 text-slate-500 border-slate-800'}">${tag}</button>`;
-            }).join('');
-        }
-
-        function updateQuickSelect() {
-            const container = document.getElementById('quickSelectTags');
-            const allTags = new Set();
-            words.forEach(w => w.tags.forEach(t => allTags.add(t)));
-            const currentInputTags = document.getElementById('newTags').value.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
-            container.innerHTML = [...allTags].sort().map(t => {
-                const isActive = currentInputTags.includes(t);
-                return `<button onclick="toggleTagInInput('${t}')" class="text-[9px] px-2 py-1 rounded border uppercase transition-all ${isActive ? 'bg-cyan-500 text-black border-cyan-300' : 'bg-slate-800 text-cyan-400 border-slate-700 hover:bg-cyan-900'}">${t}</button>`;
-            }).join('');
-        }
-
-        function toggleTagInInput(tag) {
-            const input = document.getElementById('newTags');
-            let current = input.value.split(',').map(s => s.trim().toLowerCase()).filter(s => s);
-            if (current.includes(tag)) current = current.filter(t => t !== tag);
-            else current.push(tag);
-            input.value = current.join(', ');
-            updateQuickSelect();
-        }
 
         function renderTable() {
             const tbody = document.getElementById('wordTableBody');
@@ -286,48 +264,19 @@
                 return matchesText && matchesTags;
             });
             const paginatedItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-            const allDatabaseTags = [...new Set(words.flatMap(w => w.tags))].sort();
+
             tbody.innerHTML = paginatedItems.map((w) => {
                 const idx = words.findIndex(item => item.text === w.text);
-                const isAdding = editingTagIndex === idx;
                 return `
                 <tr class="hover:bg-cyan-900/5 transition">
                     <td class="p-4 font-bold text-slate-200">${w.text}</td>
-                    <td class="p-4">
-                        <div class="flex flex-wrap gap-1 items-center">
-                            ${w.tags.map(t => `<span class="bg-slate-900 text-cyan-600 px-2 py-0.5 rounded text-[9px] uppercase cursor-pointer hover:text-pink-500" onclick="removeTagFromWord(${idx}, '${t}')">${t} ×</span>`).join('')}
-                            ${isAdding ?
-                                `<div class="flex items-center gap-1">
-                                    <select id="inlineTagSelect" onchange="confirmInlineTag(${idx})" class="bg-slate-800 border border-cyan-500 text-cyan-400 text-[10px] px-1 py-0.5 rounded outline-none">
-                                        <option value="">Seleziona...</option>
-                                        ${allDatabaseTags.filter(t => !w.tags.includes(t)).map(t => `<option value="${t}">${t}</option>`).join('')}
-                                    </select>
-                                    <button onclick="editingTagIndex=null;renderTable()" class="text-pink-500 font-bold ml-1">×</button>
-                                 </div>` :
-                                `<button onclick="startInlineTag(${idx})" class="text-cyan-800 text-xs font-bold px-2 hover:text-cyan-400">+</button>`
-                            }
-                        </div>
-                    </td>
+                    <td class="p-4">${w.tags.map(t => `<span class="bg-slate-900 text-cyan-600 px-2 py-0.5 rounded text-[9px] uppercase mr-1">${t}</span>`).join('')}</td>
                     <td class="p-4 text-right"><button onclick="deleteWord(${idx})" class="text-pink-900 hover:text-pink-500 text-[9px] uppercase font-bold">Elimina</button></td>
                 </tr>`;
             }).join('');
             document.getElementById('paginationInfo').innerText = `Pagina ${currentPage} di ${Math.ceil(filtered.length/itemsPerPage) || 1}`;
         }
 
-        function startInlineTag(idx) { editingTagIndex = idx; renderTable(); }
-
-        function confirmInlineTag(idx) {
-            const select = document.getElementById('inlineTagSelect');
-            const val = select.value.toLowerCase();
-            if(val && !words[idx].tags.includes(val)) {
-                words[idx].tags.push(val);
-                save(); init();
-            }
-            editingTagIndex = null;
-            renderTable();
-        }
-
-        function removeTagFromWord(wi, t) { words[wi].tags = words[wi].tags.filter(tag => tag !== t); if(words[wi].tags.length === 0) words[wi].tags = ['generale']; save(); init(); }
         function deleteWord(i) { words.splice(i, 1); save(); init(); }
         function prevPage() { if(currentPage > 1) { currentPage--; renderTable(); } }
         function nextPage() { if(currentPage < Math.ceil(words.length/itemsPerPage)) { currentPage++; renderTable(); } }
@@ -335,11 +284,10 @@
         function addWordsBulk() {
             const text = document.getElementById('newWords').value;
             const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-            const tagsInput = document.getElementById('newTags').value || 'generale';
-            const tags = tagsInput.split(',').map(t => t.trim().toLowerCase()).filter(t => t);
+            const tagsInput = document.getElementById('newTags').value || 'Generale';
+            const tags = tagsInput.split(',').map(t => t.trim().toLowerCase());
             lines.forEach(l => words.push({text: l, tags: tags}));
             document.getElementById('newWords').value = '';
-            document.getElementById('newTags').value = '';
             save(); init();
         }
 
@@ -347,47 +295,31 @@
             const container = document.getElementById('tagFilters');
             const allTags = new Set();
             words.forEach(w => w.tags.forEach(t => allTags.add(t)));
-            container.innerHTML = [...allTags].sort().map(t => `<button onclick="toggleTag('${t}')" class="px-3 py-1 rounded text-[10px] font-bold border ${activeTags.has(t) ? 'bg-cyan-600 text-white' : 'bg-slate-900 text-slate-500 border-slate-800'} uppercase transition-all">${t}</button>`).join('');
+            container.innerHTML = [...allTags].sort().map(t => `<button onclick="toggleTag('${t}')" class="px-3 py-1 rounded text-[10px] font-bold border ${activeTags.has(t) ? 'bg-cyan-600 text-white border-cyan-400' : 'bg-slate-900 text-slate-500 border-slate-800'} uppercase transition-all">${t}</button>`).join('');
         }
 
         function toggleTag(t) { if(activeTags.has(t)) activeTags.delete(t); else activeTags.add(t); renderTags(); }
 
-        // --- FUNZIONE GENERATE CORRETTA ---
+        function renderArchiveSearchTags() {
+            const container = document.getElementById('archiveTagFilters');
+            const allTags = new Set();
+            words.forEach(w => w.tags.forEach(t => allTags.add(t)));
+            container.innerHTML = [...allTags].sort().map(tag => `<button onclick="toggleArchiveTag('${tag}')" class="px-2 py-1 rounded text-[9px] font-bold border ${archiveSearchTags.has(tag) ? 'bg-cyan-500 text-black border-cyan-300' : 'bg-slate-900 text-slate-500 border-slate-800'}">${tag}</button>`).join('');
+        }
+        function toggleArchiveTag(t) { if(archiveSearchTags.has(t)) archiveSearchTags.delete(t); else archiveSearchTags.add(t); renderArchiveSearchTags(); renderTable(); }
+
         function generate() {
             const display = document.getElementById('displayArea');
             const count = parseInt(document.getElementById('wordCount').value);
-
-            // Creiamo una chiave per i tag attuali per capire se sono cambiati
             const currentTagsKey = Array.from(activeTags).sort().join('|');
-
-            // Se i filtri sono cambiati rispetto all'ultima generazione, svuotiamo il mazzo
-            if (currentTagsKey !== lastUsedTagsKey) {
-                currentDeck = [];
-                lastUsedTagsKey = currentTagsKey;
-            }
-
-            let filtered = activeTags.size > 0
-                ? words.filter(w => w.tags.some(t => activeTags.has(t)))
-                : words;
-
-            if(filtered.length === 0) {
-                display.innerHTML = `<p class="text-pink-500 uppercase text-xs">Nessuna parola trovata per questi tag</p>`;
-                return;
-            }
-
+            if (currentTagsKey !== lastUsedTagsKey) { currentDeck = []; lastUsedTagsKey = currentTagsKey; }
+            let filtered = activeTags.size > 0 ? words.filter(w => w.tags.some(t => activeTags.has(t))) : words;
+            if(filtered.length === 0) return;
             let results = [];
             for(let i=0; i<count; i++) {
-                // Se il mazzo filtrato è vuoto, lo rigeneriamo SOLO con le parole filtrate
-                if(currentDeck.length === 0) {
-                    currentDeck = [...filtered].sort(() => Math.random() - 0.5);
-                }
-
-                // Se dopo il refill è ancora vuoto (non dovrebbe succedere se filtered.length > 0)
-                if(currentDeck.length > 0) {
-                    results.push(currentDeck.pop().text);
-                }
+                if(currentDeck.length === 0) currentDeck = [...filtered].sort(() => Math.random() - 0.5);
+                results.push(currentDeck.pop().text);
             }
-
             display.innerHTML = results.map(res => `<div class="animate-fade text-4xl md:text-5xl font-extrabold text-white" style="text-shadow: 0 0 10px var(--neon-cyan);">${res}</div>`).join('');
         }
 
@@ -395,7 +327,6 @@
         function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { words = JSON.parse(ev.target.result); save(); init(); resetDeck(); }; reader.readAsText(e.target.files[0]); }
 
         window.addEventListener('keydown', (e) => { if(e.code === 'Space' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) { e.preventDefault(); generate(); } });
-        document.getElementById('newTags').addEventListener('input', updateQuickSelect);
         init();
     </script>
 </body>
