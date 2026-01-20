@@ -373,9 +373,34 @@
             const lines = text.split('\n').map(l => l.trim()).filter(l => l);
             const tagsInput = document.getElementById('newTags').value || 'generale';
             const tags = tagsInput.split(',').map(t => t.trim().toLowerCase()).filter(t => t);
-            lines.forEach(l => words.push({text: l, tags: tags}));
-            document.getElementById('newWords').value = ''; document.getElementById('newTags').value = '';
-            save(); init();
+
+            let addedCount = 0;
+            let skippedCount = 0;
+
+            lines.forEach(l => {
+                // Controlla se il testo esiste già (senza distinzione tra maiuscole/minuscole)
+                const exists = words.some(w => w.text.toLowerCase() === l.toLowerCase());
+
+                if (!exists) {
+                    words.push({text: l, tags: tags});
+                    addedCount++;
+                } else {
+                    skippedCount++;
+                }
+            });
+
+            document.getElementById('newWords').value = '';
+            document.getElementById('newTags').value = '';
+
+            save();
+            init();
+
+            // Notifica personalizzata per farti sapere cosa è successo
+            if (skippedCount > 0) {
+                showNotification(`AGGIUNTI: ${addedCount} | DUPLICATI SALTATI: ${skippedCount}`);
+            } else {
+                showNotification(`${addedCount} VOCI AGGIUNTE`);
+            }
         }
 
         function renderTags() {
@@ -446,7 +471,48 @@ function generate() {
 }
 
         function exportData() { const dl = document.createElement('a'); dl.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(words))); dl.setAttribute("download", "backup.json"); dl.click(); }
-        function importData(e) { const reader = new FileReader(); reader.onload = (ev) => { words = JSON.parse(ev.target.result); save(); init(); resetDeck(); }; reader.readAsText(e.target.files[0]); }
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedWords = JSON.parse(e.target.result);
+                    if (Array.isArray(importedWords)) {
+                        let addedCount = 0;
+                        let skippedCount = 0;
+
+                        importedWords.forEach(newW => {
+                            // Controlla se la parola esiste già (senza badare a maiuscole/minuscole)
+                            const exists = words.some(w => w.text.toLowerCase() === newW.text.toLowerCase());
+
+                            if (!exists) {
+                                words.push(newW);
+                                addedCount++;
+                            } else {
+                                skippedCount++;
+                            }
+                        });
+
+                        save();
+                        init();
+                        resetDeck();
+
+                        if (skippedCount > 0) {
+                            showNotification(`IMPORTATO: ${addedCount} | DUPLICATI ESCLUSI: ${skippedCount}`);
+                        } else {
+                            showNotification(`IMPORTAZIONE COMPLETATA: ${addedCount} VOCI`);
+                        }
+                    }
+                } catch (err) {
+                    showNotification("ERRORE NEL FORMATO DEL FILE");
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // Reset per poter ricaricare lo stesso file se serve
+        }
 
         window.addEventListener('keydown', (e) => { if(e.code === 'Space' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) { e.preventDefault(); generate(); } });
         document.getElementById('newTags').addEventListener('input', updateQuickSelect);
