@@ -10,6 +10,8 @@
       }, { passive: false });
       let lastTap = 0;
       document.addEventListener('touchend', function(e) {
+        const tag = e.target.tagName;
+        if (['BUTTON', 'INPUT', 'TEXTAREA', 'SELECT', 'A'].includes(tag)) return;
         const now = Date.now();
         if (now - lastTap < 300) e.preventDefault();
         lastTap = now;
@@ -534,7 +536,7 @@ function generate() {
     }
 
     display.innerHTML = results.map(res =>
-        `<div class="animate-fade font-extrabold text-white" style="text-shadow: 0 0 10px var(--neon-cyan); white-space: nowrap;">${res}</div>`
+        `<div class="animate-fade font-extrabold text-white text-center" style="text-shadow: 0 0 10px var(--neon-cyan); overflow-wrap: normal; word-break: keep-all; hyphens: none;">${res}</div>`
     ).join('');
     fitTextToContainer();
 }
@@ -543,26 +545,27 @@ function fitTextToContainer() {
     const display = document.getElementById('displayArea');
     const items = display.querySelectorAll('div.animate-fade');
     if (!items.length) return;
+
     const availableWidth = display.clientWidth - 80;
-    let minSize = 80;
+    const availableHeight = display.clientHeight - 80;
+
+    // Imposta larghezza fissa su ogni item così il wrap funziona correttamente
     items.forEach(el => {
-        let size = 80;
-        el.style.fontSize = size + 'px';
-        while (size > 8 && el.scrollWidth > availableWidth) {
-            size--;
-            el.style.fontSize = size + 'px';
-        }
-        if (size < minSize) minSize = size;
+        el.style.width = availableWidth + 'px';
+        el.style.flexShrink = '0';
     });
-    items.forEach(el => el.style.fontSize = minSize + 'px');
-    // Ora riduci ulteriormente se l'altezza totale supera il container
-    const gap = 16;
-    while (minSize > 8) {
-        const totalH = items.length * (items[0].scrollHeight + gap);
-        if (totalH <= display.clientHeight - 40) break;
-        minSize--;
-        items.forEach(el => el.style.fontSize = minSize + 'px');
+
+    // Binary search: trova il font size massimo in cui tutto sta dentro
+    let lo = 8, hi = 80;
+    while (lo < hi) {
+        const mid = Math.ceil((lo + hi) / 2);
+        items.forEach(el => el.style.fontSize = mid + 'px');
+        const gap = 16 * (items.length - 1);
+        const totalH = Array.from(items).reduce((sum, el) => sum + el.scrollHeight, 0) + gap;
+        if (totalH <= availableHeight) lo = mid;
+        else hi = mid - 1;
     }
+    items.forEach(el => el.style.fontSize = lo + 'px');
 }
 
         function exportData() { const dl = document.createElement('a'); dl.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(words))); dl.setAttribute("download", "backup.json"); dl.click(); }
