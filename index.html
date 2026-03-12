@@ -10,8 +10,10 @@
       }, { passive: false });
       let lastTap = 0;
       document.addEventListener('touchend', function(e) {
-        const tag = e.target.tagName;
-        if (['BUTTON', 'INPUT', 'TEXTAREA', 'SELECT', 'A'].includes(tag)) return;
+        const el = e.target;
+        const tag = el.tagName;
+        const isEditable = el.isContentEditable;
+        if (isEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
         const now = Date.now();
         if (now - lastTap < 300) e.preventDefault();
         lastTap = now;
@@ -159,6 +161,7 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(5, 11, 20, 0.98); z-index: 100;
             display: none; overflow-y: auto; padding: 1rem;
+            touch-action: manipulation;
         }
 
         .cyber-input {
