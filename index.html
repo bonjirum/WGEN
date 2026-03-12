@@ -546,23 +546,26 @@ function fitTextToContainer() {
     const items = display.querySelectorAll('div.animate-fade');
     if (!items.length) return;
 
-    const availableWidth = display.clientWidth - 80;
-    const availableHeight = display.clientHeight - 80;
+    const padding = 40;
+    const availableWidth = display.clientWidth - padding * 2;
+    const availableHeight = display.clientHeight - padding * 2;
 
-    // Imposta larghezza fissa su ogni item così il wrap funziona correttamente
     items.forEach(el => {
         el.style.width = availableWidth + 'px';
         el.style.flexShrink = '0';
+        el.style.whiteSpace = 'normal';
     });
 
-    // Binary search: trova il font size massimo in cui tutto sta dentro
-    let lo = 8, hi = 80;
+    // Binary search per il font size massimo che fa stare tutto
+    let lo = 8, hi = 100;
     while (lo < hi) {
         const mid = Math.ceil((lo + hi) / 2);
         items.forEach(el => el.style.fontSize = mid + 'px');
-        const gap = 16 * (items.length - 1);
+        const gap = 12 * (items.length - 1);
         const totalH = Array.from(items).reduce((sum, el) => sum + el.scrollHeight, 0) + gap;
-        if (totalH <= availableHeight) lo = mid;
+        // Controlla anche che nessuna parola sfori in larghezza
+        const anyOverflow = Array.from(items).some(el => el.scrollWidth > availableWidth + 2);
+        if (totalH <= availableHeight && !anyOverflow) lo = mid;
         else hi = mid - 1;
     }
     items.forEach(el => el.style.fontSize = lo + 'px');
