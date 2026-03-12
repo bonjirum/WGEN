@@ -536,7 +536,7 @@ function generate() {
     }
 
     display.innerHTML = results.map(res =>
-        `<div class="animate-fade font-extrabold text-white text-center" style="text-shadow: 0 0 10px var(--neon-cyan); overflow-wrap: normal; word-break: keep-all; hyphens: none;">${res}</div>`
+        `<div class="animate-fade font-extrabold text-white text-center" style="text-shadow: 0 0 10px var(--neon-cyan); overflow-wrap: normal; word-break: keep-all; hyphens: none; line-height: 1.1;">${res}</div>`
     ).join('');
     fitTextToContainer();
 }
