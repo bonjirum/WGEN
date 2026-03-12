@@ -28,6 +28,14 @@
             --bg-panel: #0a1120;
         }
 
+        * {
+            touch-action: manipulation;
+        }
+
+        html, body {
+            touch-action: manipulation;
+        }
+
         body {
             font-family: 'Rajdhani', sans-serif;
             background-color: var(--bg-dark);
@@ -181,7 +189,7 @@
 
         <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-8 space-y-6">
-                <div id="displayArea" class="cyber-container rounded-3xl p-10 min-h-[450px] flex flex-col items-center justify-center gap-4 text-center">
+                <div id="displayArea" class="cyber-container rounded-3xl p-10 flex flex-col items-center justify-center gap-4 text-center" style="height: 450px; overflow: hidden;">
                     <p class="text-slate-600 italic uppercase text-xs">In attesa...</p>
                 </div>
 
@@ -269,6 +277,7 @@
 
     <script>
         let words = JSON.parse(localStorage.getItem('myWords')) || [];
+        let _firstLoad = words.length === 0;
         let activeTags = new Set();
         let archiveSearchTags = new Set();
         let currentPage = 1;
@@ -525,8 +534,25 @@ function generate() {
     }
 
     display.innerHTML = results.map(res =>
-        `<div class="animate-fade text-4xl md:text-5xl font-extrabold text-white" style="text-shadow: 0 0 10px var(--neon-cyan);">${res}</div>`
+        `<div class="animate-fade font-extrabold text-white" style="text-shadow: 0 0 10px var(--neon-cyan); word-break: break-word;">${res}</div>`
     ).join('');
+    fitTextToContainer();
+}
+
+function fitTextToContainer() {
+    const display = document.getElementById('displayArea');
+    const items = display.querySelectorAll('div.animate-fade');
+    if (!items.length) return;
+    const availableHeight = (display.clientHeight - 80) / items.length;
+    const availableWidth = display.clientWidth - 80;
+    items.forEach(el => {
+        let size = 80;
+        el.style.fontSize = size + 'px';
+        while (size > 12 && (el.scrollWidth > availableWidth || el.scrollHeight > availableHeight)) {
+            size--;
+            el.style.fontSize = size + 'px';
+        }
+    });
 }
 
         function exportData() { const dl = document.createElement('a'); dl.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(words))); dl.setAttribute("download", "backup.json"); dl.click(); }
@@ -585,7 +611,7 @@ function generate() {
             }
         });
         document.getElementById('newTags').addEventListener('input', updateQuickSelect);
-        init();
+        if (_firstLoad) loadDefaultDB(); else init();
     </script>
 </body>
 </html>
