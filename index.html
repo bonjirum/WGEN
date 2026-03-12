@@ -545,6 +545,7 @@ function fitTextToContainer() {
     if (!items.length) return;
     const availableHeight = (display.clientHeight - 80) / items.length;
     const availableWidth = display.clientWidth - 80;
+    let minSize = 80;
     items.forEach(el => {
         let size = 80;
         el.style.fontSize = size + 'px';
@@ -552,7 +553,9 @@ function fitTextToContainer() {
             size--;
             el.style.fontSize = size + 'px';
         }
+        if (size < minSize) minSize = size;
     });
+    items.forEach(el => el.style.fontSize = minSize + 'px');
 }
 
         function exportData() { const dl = document.createElement('a'); dl.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(words))); dl.setAttribute("download", "backup.json"); dl.click(); }
