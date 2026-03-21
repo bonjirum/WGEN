@@ -5,6 +5,9 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
         let currentPage = 1;
         let itemsPerPage = 12;
         let _filteredLength = 0;
+        let _mobileDetailIndex = -1;
+        let _mobileDetailFiltered = [];
+        let _desktopEditIndex = -1;
         let searchQuery = "";
         let currentDeck = [];
         let editingTagIndex = null;
@@ -117,34 +120,45 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
             const paginatedItems = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
             const allDatabaseTags = [...new Set(words.flatMap(w => w.tags.map(t => t.toLowerCase())))].sort();
 
+            const isMobileView = window.innerWidth < 1024;
             tbody.innerHTML = paginatedItems.map((w) => {
-                // Troviamo l'indice reale nell'array originale 'words'
                 const idx = words.findIndex(item => item.text === w.text);
                 const isAdding = editingTagIndex === idx;
 
+                if (isMobileView) {
+                    return `
+                    <tr onclick="openMobileDetail(${idx})" style="cursor:pointer;">
+                        <td class="p-4" style="width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">
+                            <div class="font-bold theme-editable" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${w.text}</div>
+                        </td>
+                        <td style="padding:0 12px 0 4px;text-align:right;color:var(--neon-cyan);font-size:1.4rem;white-space:nowrap;width:28px;vertical-align:middle;">›</td>
+                    </tr>`;
+                }
+
+                // Tag: mostra quelli che stanno, +X per gli altri
+                const MAX_TAGS_VISIBLE = 3;
+                const visibleTags = w.tags.slice(0, MAX_TAGS_VISIBLE);
+                const hiddenCount = w.tags.length - MAX_TAGS_VISIBLE;
+                const tagsHtml = visibleTags.map(t =>
+                    `<span class="theme-tag-chip px-2 py-0.5 rounded text-[9px] uppercase" style="background:rgba(var(--neon-cyan-rgb),0.08);color:var(--neon-cyan);border:1px solid rgba(var(--neon-cyan-rgb),0.2);white-space:nowrap;">${t}</span>`
+                ).join('') + (hiddenCount > 0 ? `<span onclick="openDesktopEdit(${idx})" style="font-family:'Rajdhani',sans-serif;font-size:0.6rem;font-weight:700;color:var(--neon-cyan);opacity:0.6;cursor:pointer;white-space:nowrap;padding:2px 6px;">+${hiddenCount}</span>` : '');
+
                 return `
-                <tr class="theme-row-hover transition">
-                    <td class="p-4">
-                        <div contenteditable="true"
-                             onblur="updateWordText(${idx}, this.innerText)"
-                             class="font-bold theme-editable outline-none px-2 py-1 rounded transition-all cursor-edit"
-                             spellcheck="false">
-                            ${w.text}
-                        </div>
+                <tr class="theme-row-hover transition" style="cursor:pointer;" onclick="openDesktopEdit(${idx})">
+                    <td class="p-4" style="width:55%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:0;">
+                        <div class="font-bold theme-editable" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${w.text}</div>
                     </td>
-                    <td class="p-4">
-                        <div class="flex flex-wrap gap-1 items-center">
-                            ${w.tags.map(t => `<span class="theme-tag-chip px-2 py-0.5 rounded text-[9px] uppercase cursor-pointer" onclick="removeTagFromWord(${idx}, '${t}')">${t} ×</span>`).join('')}
-                            ${isAdding ? `<select onchange="confirmInlineTag(${idx}, this.value)" class="theme-panel-dark theme-label text-[10px] rounded" style="border:1px solid rgba(var(--neon-cyan-rgb),0.2);"><option value="">+</option>${allDatabaseTags.filter(t => !w.tags.map(wt=>wt.toLowerCase()).includes(t)).map(t => `<option value="${t}">${t.toUpperCase()}</option>`).join('')}</select>` : `<button onclick="editingTagIndex=${idx};renderTable()" class="theme-muted text-xs">+</button>`}
-                        </div>
+                    <td class="p-4" style="width:35%;overflow:hidden;max-width:0;">
+                        <div style="display:flex;gap:4px;align-items:center;overflow:hidden;flex-wrap:nowrap;">${tagsHtml}</div>
                     </td>
-                    <td class="p-4 text-right">
-                        <button onclick="deleteWord(${idx})" style="font-family:'Rajdhani',sans-serif;font-size:0.65rem;font-weight:700;background:none;border:none;color:#7f1d1d;cursor:pointer;text-transform:uppercase;transition:color 0.2s;" onmouseover="this.style.color='#ff2e63'" onmouseout="this.style.color='#7f1d1d'">Elimina</button>
+                    <td class="p-4 text-right" style="width:10%;white-space:nowrap;" onclick="event.stopPropagation()">
+                        <button onclick="openDesktopEdit(${idx})" style="font-family:'Rajdhani',sans-serif;font-size:0.65rem;font-weight:700;background:none;border:none;color:var(--neon-cyan);cursor:pointer;text-transform:uppercase;opacity:0.6;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">Modifica</button>
                     </td>
                 </tr>`;
             }).join('');
 
             _filteredLength = filtered.length;
+            _mobileDetailFiltered = filtered;
             document.getElementById('paginationInfo').innerText = `Pagina ${currentPage} di ${Math.ceil(filtered.length/itemsPerPage) || 1}`;
             // Ricalcola se le righe hanno altezza variabile (frasi lunghe)
             const modal = document.getElementById('editorModal');
@@ -489,6 +503,177 @@ function fitTextToContainer() {
             }
         }
 
+
+        function openMobileDetail(wordIdx) {
+            _mobileDetailIndex = wordIdx;
+            const w = words[wordIdx];
+            if (!w) return;
+            const screen = document.getElementById('mobileDetailScreen');
+            document.getElementById('mobileDetailText').value = w.text;
+            renderMobileDetailTags(wordIdx);
+            // Popola select tag disponibili
+            const allTags = [...new Set(words.flatMap(w => w.tags.map(t => t.toLowerCase())))].sort();
+            const sel = document.getElementById('mobileDetailTagSelect');
+            sel.innerHTML = '<option value="">+ Aggiungi tag...</option>' +
+                allTags.filter(t => !w.tags.map(wt => wt.toLowerCase()).includes(t))
+                       .map(t => `<option value="${t}">${t.toUpperCase()}</option>`).join('');
+            sel.onchange = function() {
+                if (this.value) {
+                    words[_mobileDetailIndex].tags.push(this.value);
+                    save();
+                    renderMobileDetailTags(_mobileDetailIndex);
+                    openMobileDetail(_mobileDetailIndex); // refresh select
+                }
+            };
+            screen.style.display = 'flex';
+            setTimeout(() => screen.classList.add('open'), 10);
+        }
+
+        function renderMobileDetailTags(wordIdx) {
+            const w = words[wordIdx];
+            const container = document.getElementById('mobileDetailTags');
+            container.innerHTML = w.tags.map(t =>
+                `<span class="theme-tag-chip px-3 py-1 rounded text-xs uppercase cursor-pointer"
+                       onclick="removeMobileDetailTag('${t}')"
+                       style="background:rgba(var(--neon-cyan-rgb),0.1);color:var(--neon-cyan);border:1px solid rgba(var(--neon-cyan-rgb),0.25);">
+                    ${t} ×
+                </span>`
+            ).join('');
+        }
+
+        function removeMobileDetailTag(tag) {
+            if (_mobileDetailIndex < 0) return;
+            const w = words[_mobileDetailIndex];
+            w.tags = w.tags.filter(t => t !== tag);
+            if (w.tags.length === 0) w.tags = ['generale'];
+            save();
+            renderMobileDetailTags(_mobileDetailIndex);
+        }
+
+        function saveMobileDetail() {
+            if (_mobileDetailIndex < 0) return;
+            const newText = document.getElementById('mobileDetailText').value.trim();
+            if (!newText) return;
+            const exists = words.some((w, i) => i !== _mobileDetailIndex && w.text.toLowerCase() === newText.toLowerCase());
+            if (exists) { showNotification('ERRORE: VOCE GIÀ ESISTENTE'); return; }
+            words[_mobileDetailIndex].text = newText;
+            save();
+            renderTags();
+            showNotification('VOCE AGGIORNATA');
+            closeMobileDetail();
+            renderTable();
+        }
+
+        function deleteMobileDetail() {
+            if (_mobileDetailIndex < 0) return;
+            words.splice(_mobileDetailIndex, 1);
+            save();
+            init();
+            resetDeck();
+            showNotification('VOCE ELIMINATA');
+            closeMobileDetail();
+        }
+
+        function closeMobileDetail() {
+            const screen = document.getElementById('mobileDetailScreen');
+            screen.classList.remove('open');
+            setTimeout(() => { screen.style.display = 'none'; }, 260);
+            _mobileDetailIndex = -1;
+        }
+
+        function confirmClearDatabase() {
+            const modal = document.getElementById('clearDbModal');
+            modal.style.display = 'flex';
+            closeDrawer();
+        }
+        function closeClearModal() {
+            document.getElementById('clearDbModal').style.display = 'none';
+        }
+        function clearDatabase() {
+            words = [];
+            save();
+            init();
+            resetDeck();
+            closeClearModal();
+            showNotification('DATABASE ELIMINATO');
+        }
+
+
+        function openDesktopEdit(idx) {
+            if (window.innerWidth < 1024) return;
+            _desktopEditIndex = idx;
+            const w = words[idx];
+            if (!w) return;
+            document.getElementById('desktopEditText').value = w.text;
+            renderDesktopEditTags(idx);
+            // Popola select
+            const allTags = [...new Set(words.flatMap(w => w.tags.map(t => t.toLowerCase())))].sort();
+            const sel = document.getElementById('desktopEditTagSelect');
+            sel.innerHTML = '<option value="">+ Aggiungi tag...</option>' +
+                allTags.filter(t => !w.tags.map(wt => wt.toLowerCase()).includes(t))
+                       .map(t => `<option value="${t}">${t.toUpperCase()}</option>`).join('');
+            sel.onchange = function() {
+                if (this.value) {
+                    words[_desktopEditIndex].tags.push(this.value);
+                    save();
+                    renderDesktopEditTags(_desktopEditIndex);
+                    // Refresh select
+                    const allT = [...new Set(words.flatMap(w => w.tags.map(t => t.toLowerCase())))].sort();
+                    this.innerHTML = '<option value="">+ Aggiungi tag...</option>' +
+                        allT.filter(t => !words[_desktopEditIndex].tags.map(wt => wt.toLowerCase()).includes(t))
+                            .map(t => `<option value="${t}">${t.toUpperCase()}</option>`).join('');
+                    this.value = '';
+                }
+            };
+            const modal = document.getElementById('desktopEditModal');
+            modal.style.display = 'flex';
+        }
+
+        function renderDesktopEditTags(idx) {
+            const w = words[idx];
+            const container = document.getElementById('desktopEditTags');
+            container.innerHTML = w.tags.map(t =>
+                `<span onclick="removeDesktopEditTag('${t}')" style="font-family:'Rajdhani',sans-serif;font-size:0.6rem;font-weight:700;text-transform:uppercase;padding:4px 10px;border-radius:6px;background:rgba(var(--neon-cyan-rgb),0.1);border:1px solid rgba(var(--neon-cyan-rgb),0.3);color:var(--neon-cyan);cursor:pointer;">${t} ×</span>`
+            ).join('');
+        }
+
+        function removeDesktopEditTag(tag) {
+            if (_desktopEditIndex < 0) return;
+            const w = words[_desktopEditIndex];
+            w.tags = w.tags.filter(t => t !== tag);
+            if (w.tags.length === 0) w.tags = ['generale'];
+            save();
+            renderDesktopEditTags(_desktopEditIndex);
+        }
+
+        function saveDesktopEdit() {
+            if (_desktopEditIndex < 0) return;
+            const newText = document.getElementById('desktopEditText').value.trim();
+            if (!newText) return;
+            const exists = words.some((w, i) => i !== _desktopEditIndex && w.text.toLowerCase() === newText.toLowerCase());
+            if (exists) { showNotification('ERRORE: VOCE GIÀ ESISTENTE'); return; }
+            words[_desktopEditIndex].text = newText;
+            save();
+            renderTags();
+            showNotification('VOCE AGGIORNATA');
+            closeDesktopEdit();
+            renderTable();
+        }
+
+        function deleteDesktopEdit() {
+            if (_desktopEditIndex < 0) return;
+            words.splice(_desktopEditIndex, 1);
+            save();
+            init();
+            resetDeck();
+            showNotification('VOCE ELIMINATA');
+            closeDesktopEdit();
+        }
+
+        function closeDesktopEdit() {
+            document.getElementById('desktopEditModal').style.display = 'none';
+            _desktopEditIndex = -1;
+        }
         window.addEventListener('keydown', (e) => {
             // Controlla se l'utente sta scrivendo in un input, textarea o un elemento contenteditable
             const isEditing = [ 'INPUT', 'TEXTAREA' ].includes(document.activeElement.tagName) ||

@@ -74,6 +74,7 @@
                     <a href="https://github.com/bonjirum/WGEN/blob/master/README.md" target="_blank" class="cyber-button button-green w-full py-3 text-[10px] mt-2">
                         MANUALE
                     </a>
+                    <button onclick="confirmClearDatabase()" class="cyber-button w-full py-3 text-[10px]" style="color:#ff2e63;border-color:rgba(255,46,99,0.3);">Cancella Database</button>
                     <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
                 </div>
             </div>
@@ -117,6 +118,7 @@
             </div>
             <button onclick="loadDefaultDB()" class="cyber-button button-orange w-full py-2 text-[10px] border-dashed">Carica DB Default</button>
             <a href="https://github.com/bonjirum/WGEN/blob/master/README.md" target="_blank" class="cyber-button button-green w-full py-2 text-[10px]">MANUALE</a>
+            <button onclick="confirmClearDatabase()" class="cyber-button w-full py-2 text-[10px]" style="color:#ff2e63;border-color:rgba(255,46,99,0.3);">Cancella Database</button>
         </div>
     </div>
 
@@ -172,6 +174,61 @@
         </div>
     </div>
 
+
+        <!-- MOBILE: schermata dettaglio voce (slide da destra) -->
+        <div id="mobileDetailScreen">
+            <div id="mobileDetailHeader">
+                <button onclick="closeMobileDetail()" id="mobileDetailBack">‹ Indietro</button>
+                <span id="mobileDetailTitle">Modifica Voce</span>
+            </div>
+            <div id="mobileDetailBody">
+                <div class="text-[10px] theme-muted uppercase font-bold mb-2">Testo</div>
+                <textarea id="mobileDetailText" class="cyber-input w-full rounded-xl p-3 text-sm font-mono mb-4" rows="3"></textarea>
+                <div class="text-[10px] theme-muted uppercase font-bold mb-2">Tag</div>
+                <div id="mobileDetailTags" class="flex flex-wrap gap-2 mb-3"></div>
+                <div class="text-[10px] theme-muted uppercase font-bold mb-2">Aggiungi Tag</div>
+                <select id="mobileDetailTagSelect" class="cyber-input w-full rounded-lg p-2 text-sm mb-4"></select>
+            </div>
+            <div id="mobileDetailFooter">
+                <button onclick="saveMobileDetail()" class="cyber-button button-primary flex-1 py-3 text-sm">Salva</button>
+                <button onclick="deleteMobileDetail()" class="cyber-button py-3 px-4 text-sm" style="color:var(--neon-pink);border-color:rgba(var(--neon-cyan-rgb),0.2);">Elimina</button>
+            </div>
+        </div>
+
+    <!-- Modale conferma cancellazione database -->
+    <div id="clearDbModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:24px;">
+        <div style="background:var(--bg-panel);border:1px solid rgba(255,46,99,0.4);border-radius:16px;padding:28px;max-width:360px;width:100%;">
+            <h3 style="font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#ff2e63;margin-bottom:12px;">⚠ Attenzione</h3>
+            <p style="font-family:'Rajdhani',sans-serif;font-size:0.85rem;color:rgba(255,255,255,0.7);line-height:1.5;margin-bottom:20px;">
+                Stai per eliminare <strong style="color:#fff;">l'intero database</strong> salvato in locale.<br>
+                Questa operazione è <strong style="color:#ff2e63;">irreversibile</strong> e non può essere annullata.
+            </p>
+            <div style="display:flex;gap:10px;">
+                <button onclick="closeClearModal()" class="cyber-button flex-1 py-3 text-sm" style="flex:1;">Annulla</button>
+                <button onclick="clearDatabase()" style="flex:1;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;padding:12px;border-radius:10px;background:linear-gradient(135deg,#ff2e63,#a00028);color:#fff;border:none;cursor:pointer;">Elimina Tutto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DESKTOP: modale modifica voce -->
+    <div id="desktopEditModal" style="display:none;position:fixed;inset:0;z-index:250;background:rgba(0,0,0,0.65);align-items:center;justify-content:center;padding:24px;">
+        <div style="background:var(--bg-panel);border:1px solid rgba(var(--neon-cyan-rgb),0.3);border-radius:16px;padding:28px;max-width:520px;width:100%;box-shadow:0 0 40px rgba(0,0,0,0.5);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h3 style="font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:var(--neon-cyan);">Modifica Voce</h3>
+                <button onclick="closeDesktopEdit()" style="font-family:'Rajdhani',sans-serif;width:32px;height:32px;border-radius:50%;border:1px solid rgba(var(--neon-cyan-rgb),0.3);background:none;color:var(--neon-cyan);font-size:1.1rem;cursor:pointer;opacity:0.6;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">×</button>
+            </div>
+            <div style="font-family:'Rajdhani',sans-serif;font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--neon-cyan);opacity:0.5;margin-bottom:6px;">Testo</div>
+            <textarea id="desktopEditText" class="cyber-input w-full rounded-xl p-3 text-sm font-mono mb-5" rows="3" style="resize:none;"></textarea>
+            <div style="font-family:'Rajdhani',sans-serif;font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--neon-cyan);opacity:0.5;margin-bottom:8px;">Tag</div>
+            <div id="desktopEditTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
+            <div style="font-family:'Rajdhani',sans-serif;font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--neon-cyan);opacity:0.5;margin-bottom:6px;">Aggiungi Tag</div>
+            <select id="desktopEditTagSelect" class="cyber-input w-full rounded-lg p-2 text-sm mb-6"></select>
+            <div style="display:flex;gap:10px;">
+                <button onclick="saveDesktopEdit()" class="cyber-button button-primary flex-1 py-3 text-sm">Salva</button>
+                <button onclick="deleteDesktopEdit()" class="cyber-button py-3 px-4 text-sm" style="color:#ff2e63;border-color:rgba(255,46,99,0.3);">Elimina</button>
+            </div>
+        </div>
+    </div>
     <script src="js/app.js"></script>
 </body>
 </html>
