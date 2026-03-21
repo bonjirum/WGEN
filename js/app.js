@@ -285,10 +285,15 @@ function generate() {
             // D: ombra blocco solida colorata
             cyanShadow = '0 0 8px var(--neon-cyan), 2px 2px 0 #4a0018, 3px 4px 0 rgba(0,0,0,0.5)';
             altShadow  = '0 0 8px ' + altColor + ', 2px 2px 0 #4a2000, 3px 4px 0 rgba(0,0,0,0.5)';
-        } else if (palette === 'marvin') {
-            // C: ombra azzurra chiara su cyan, leggera sul nero
-            cyanShadow = '0 0 10px rgba(0,173,181,0.4), 2px 3px 0px rgba(0,173,181,0.12)';
-            altShadow  = '1px 2px 4px rgba(0,0,0,0.12)';
+        } else if (palette === 'cioccolato') {
+            cyanShadow = '0 0 8px rgba(255,248,240,0.6), 2px 2px 0 #2a1410, 3px 4px 0 rgba(0,0,0,0.5)';
+            altShadow  = '0 0 8px rgba(192,133,82,0.6), 2px 2px 0 #2a1410, 3px 4px 0 rgba(0,0,0,0.5)';
+        } else if (palette === 'halloween') {
+            cyanShadow = '0 0 8px #FA8112, 2px 2px 0 #5a2500, 3px 4px 0 rgba(0,0,0,0.5)';
+            altShadow  = '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)';
+        } else if (palette === 'pastello') {
+            cyanShadow = '0 0 10px rgba(221,174,211,0.7), 2px 3px 6px rgba(0,0,0,0.7)';
+            altShadow  = '2px 3px 6px rgba(0,0,0,0.7)';
         } else {
             // switch e altri: drop shadow originale
             cyanShadow = '0 0 12px var(--neon-cyan), 2px 3px 6px rgba(0,0,0,0.9)';
@@ -430,10 +435,12 @@ function fitTextToContainer() {
 
         // ── PALETTE SWITCHER ──
         const PALETTES = [
-            { id: 'switch',    label: 'Switch'    },
-            { id: 'cyberpunk', label: 'Cyberpunk' },
-            { id: 'retrowave', label: 'Retrowave' },
-            { id: 'marvin',    label: 'Marvin'    },
+            { id: 'switch',     label: 'Switch'     },
+            { id: 'cioccolato', label: 'Cioccolato' },
+            { id: 'halloween',  label: 'Halloween'  },
+            { id: 'retrowave',  label: 'Retrowave'  },
+            { id: 'cyberpunk',  label: 'Cyberpunk'  },
+            { id: 'pastello',   label: 'Pastello'   },
         ];
 
         function buildPaletteSelectors() {
@@ -449,8 +456,10 @@ function fitTextToContainer() {
         const PALETTE_GRADIENTS = {
             cyberpunk: ['0,255,242',   '188,19,254'],
             retrowave: ['222,26,88',   '246,125,49'],
-            marvin:    ['0,173,181',   '0,173,181'],
-            switch:    ['8,217,214',   '255,46,99'],
+            switch:      ['8,217,214',   '255,46,99'],
+            cioccolato:  ['192,133,82',  '75,46,43'],
+            halloween:   ['250,129,18',  '34,34,34'],
+            pastello:    ['221,174,211',  '101,148,177'],
         };
 
         function applyPalette(name) {
@@ -480,9 +489,15 @@ function fitTextToContainer() {
                     } else if (name === 'retrowave') {
                         cyanShadow = '0 0 8px var(--neon-cyan), 2px 2px 0 #4a0018, 3px 4px 0 rgba(0,0,0,0.5)';
                         altShadow  = '0 0 8px ' + altColor + ', 2px 2px 0 #4a2000, 3px 4px 0 rgba(0,0,0,0.5)';
-                    } else if (name === 'marvin') {
-                        cyanShadow = '0 0 10px rgba(0,173,181,0.4), 2px 3px 0px rgba(0,173,181,0.12)';
-                        altShadow  = '1px 2px 4px rgba(0,0,0,0.12)';
+                    } else if (name === 'cioccolato') {
+                        cyanShadow = '0 0 8px rgba(255,248,240,0.6), 2px 2px 0 #2a1410, 3px 4px 0 rgba(0,0,0,0.5)';
+                        altShadow  = '0 0 8px rgba(192,133,82,0.6), 2px 2px 0 #2a1410, 3px 4px 0 rgba(0,0,0,0.5)';
+                    } else if (name === 'halloween') {
+                        cyanShadow = '0 0 8px #FA8112, 2px 2px 0 #5a2500, 3px 4px 0 rgba(0,0,0,0.5)';
+                        altShadow  = '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)';
+                    } else if (name === 'pastello') {
+                        cyanShadow = '0 0 10px rgba(221,174,211,0.7), 2px 3px 6px rgba(0,0,0,0.7)';
+                        altShadow  = '2px 3px 6px rgba(0,0,0,0.7)';
                     } else {
                         cyanShadow = '0 0 12px var(--neon-cyan), 2px 3px 6px rgba(0,0,0,0.9)';
                         altShadow  = '0 0 12px ' + altColor + ', 2px 3px 6px rgba(0,0,0,0.9)';

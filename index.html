@@ -49,8 +49,8 @@
                     <div class="flex flex-row items-center justify-center gap-4 w-full sm:w-auto">
                         <div class="flex items-center gap-1 px-4 py-2 rounded-full h-[58px]" style="background:var(--bg-dark);border:1px solid rgba(0,255,242,0.2);">
                             <button onclick="adjustCount(-1)" class="w-8 h-8 flex items-center justify-center font-bold text-xl" style="color:var(--neon-cyan);background:none;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;">−</button>
-                            <input type="number" id="wordCountDesktop" value="1" min="1" max="10"
-                                   class="bg-transparent border-none w-10 text-center text-white font-bold text-xl outline-none focus:ring-0">
+                            <input type="number" id="wordCountDesktop" value="1" min="1" max="10" readonly
+                                   class="bg-transparent border-none w-10 text-center text-white font-bold text-xl outline-none focus:ring-0" style="pointer-events:none;">
                             <button onclick="adjustCount(1)" class="w-8 h-8 flex items-center justify-center font-bold text-xl" style="color:var(--neon-cyan);background:none;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;">+</button>
                         </div>
                         <button onclick="generate()" class="cyber-button button-primary px-12 py-4 text-lg flex-1 sm:flex-none h-[58px]">GENERA</button>
@@ -84,7 +84,7 @@
     <div id="mobileBottombar">
         <div class="mob-counter">
             <button onclick="adjustCount(-1)" style="font-family:'Rajdhani',sans-serif;font-weight:700;">−</button>
-            <input type="number" id="wordCount" value="1" min="1" max="10">
+            <input type="number" id="wordCount" value="1" min="1" max="10" readonly style="pointer-events:none;">
             <button onclick="adjustCount(1)" style="font-family:'Rajdhani',sans-serif;font-weight:700;">+</button>
         </div>
         <button onclick="generate()" class="cyber-button button-primary text-sm flex-1" style="height:46px;letter-spacing:3px;">GENERA</button>
