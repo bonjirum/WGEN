@@ -4,6 +4,7 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
         let archiveSearchTags = new Set();
         let currentPage = 1;
         let itemsPerPage = 12;
+        let _filteredLength = 0;
         let searchQuery = "";
         let currentDeck = [];
         let editingTagIndex = null;
@@ -21,8 +22,17 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
             } catch (err) { showNotification("ERR: USA LIVE SERVER PER IL FILE JSON"); }
         }
 
-        function openEditor() { document.getElementById('editorModal').style.display = 'block'; document.body.style.overflow = 'hidden'; init(); }
-        function closeEditor() { document.getElementById('editorModal').style.display = 'none'; document.body.style.overflow = 'auto'; }
+        function openEditor() {
+            const modal = document.getElementById('editorModal');
+            modal.classList.add('editor-open');
+            document.body.style.overflow = 'hidden';
+            init();
+            setTimeout(calcItemsPerPage, 80);
+        }
+        function closeEditor() {
+            document.getElementById('editorModal').classList.remove('editor-open');
+            document.body.style.overflow = 'auto';
+        }
 
         let _toastTimeout = null;
         function showNotification(m) {
@@ -51,7 +61,7 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
             const currentInputTags = document.getElementById('newTags').value.split(',').map(s => s.trim().toLowerCase());
             container.innerHTML = [...allTags].sort().map(t => {
                 const isActive = currentInputTags.includes(t);
-                return `<button onclick="toggleTagInInput('${t}')"class="text-[11px] px-3 py-1.5 rounded-md border uppercase transition-all ${isActive ? 'bg-cyan-500 text-black border-cyan-300' : 'bg-slate-800 text-cyan-400 border-slate-700'}">${t}</button>`;
+                return `<button onclick="toggleTagInInput('${t}')" class="text-[11px] px-3 py-1.5 rounded-md border uppercase transition-all ${isActive ? 'theme-tag-active' : 'theme-tag-inactive'}">${t}</button>`;
             }).join('');
         }
 
@@ -88,7 +98,7 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
                 return `
                     <button onclick="toggleArchiveTag('${tag}')"
                         class="px-4 py-2 rounded-lg text-[11px] font-bold border uppercase transition-all
-                        ${active ? 'bg-cyan-500 text-black border-cyan-300 shadow-[0_0_10px_rgba(0,255,242,0.4)]' : 'bg-slate-900 text-slate-500 border-slate-800'}">
+                        ${active ? 'theme-tag-active' : 'theme-tag-inactive'}">
                         ${tag} (${count})
                     </button>`;
             }).join('');
@@ -113,19 +123,19 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
                 const isAdding = editingTagIndex === idx;
 
                 return `
-                <tr class="hover:bg-cyan-900/5 transition">
+                <tr class="theme-row-hover transition">
                     <td class="p-4">
                         <div contenteditable="true"
                              onblur="updateWordText(${idx}, this.innerText)"
-                             class="font-bold text-slate-200 outline-none focus:text-cyan-400 focus:bg-slate-800/50 px-2 py-1 rounded transition-all cursor-edit"
+                             class="font-bold theme-editable outline-none px-2 py-1 rounded transition-all cursor-edit"
                              spellcheck="false">
                             ${w.text}
                         </div>
                     </td>
                     <td class="p-4">
                         <div class="flex flex-wrap gap-1 items-center">
-                            ${w.tags.map(t => `<span class="bg-slate-900 text-cyan-600 px-2 py-0.5 rounded text-[9px] uppercase cursor-pointer" onclick="removeTagFromWord(${idx}, '${t}')">${t} ×</span>`).join('')}
-                            ${isAdding ? `<select onchange="confirmInlineTag(${idx}, this.value)" class="bg-slate-800 text-cyan-400 text-[10px] rounded"><option value="">+</option>${allDatabaseTags.filter(t => !w.tags.map(wt=>wt.toLowerCase()).includes(t)).map(t => `<option value="${t}">${t.toUpperCase()}</option>`).join('')}</select>` : `<button onclick="editingTagIndex=${idx};renderTable()" class="text-cyan-800 text-xs">+</button>`}
+                            ${w.tags.map(t => `<span class="theme-tag-chip px-2 py-0.5 rounded text-[9px] uppercase cursor-pointer" onclick="removeTagFromWord(${idx}, '${t}')">${t} ×</span>`).join('')}
+                            ${isAdding ? `<select onchange="confirmInlineTag(${idx}, this.value)" class="theme-panel-dark theme-label text-[10px] rounded" style="border:1px solid rgba(var(--neon-cyan-rgb),0.2);"><option value="">+</option>${allDatabaseTags.filter(t => !w.tags.map(wt=>wt.toLowerCase()).includes(t)).map(t => `<option value="${t}">${t.toUpperCase()}</option>`).join('')}</select>` : `<button onclick="editingTagIndex=${idx};renderTable()" class="theme-muted text-xs">+</button>`}
                         </div>
                     </td>
                     <td class="p-4 text-right">
@@ -134,7 +144,13 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
                 </tr>`;
             }).join('');
 
+            _filteredLength = filtered.length;
             document.getElementById('paginationInfo').innerText = `Pagina ${currentPage} di ${Math.ceil(filtered.length/itemsPerPage) || 1}`;
+            // Ricalcola se le righe hanno altezza variabile (frasi lunghe)
+            const modal = document.getElementById('editorModal');
+            if (modal && modal.classList.contains('editor-open')) {
+                requestAnimationFrame(calcItemsPerPage);
+            }
         }
 
         function confirmInlineTag(idx, val) { if(val) words[idx].tags.push(val); editingTagIndex = null; save(); init(); }
@@ -167,7 +183,7 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
             showNotification("VOCE AGGIORNATA");
         }
         function prevPage() { if(currentPage > 1) { currentPage--; renderTable(); } }
-        function nextPage() { if(currentPage < Math.ceil(words.length/itemsPerPage)) { currentPage++; renderTable(); } }
+        function nextPage() { if(currentPage < Math.ceil(_filteredLength/itemsPerPage)) { currentPage++; renderTable(); } }
 
         function addWordsBulk() {
             const text = document.getElementById('newWords').value;
@@ -227,7 +243,7 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
                 return `
                     <button onclick="toggleTag('${t}')"
                         class="px-4 py-2 rounded-lg text-xs font-bold border uppercase transition-all hover:border-cyan-500
-                        ${active ? 'bg-cyan-600 text-white border-cyan-400 shadow-[0_0_10px_rgba(0,255,242,0.3)]' : 'bg-slate-900 text-slate-500 border-slate-800'}">
+                        ${active ? 'theme-tag-active' : 'theme-tag-inactive'}">
                         ${t} (${count})
                     </button>`;
             }).join('');
@@ -294,6 +310,18 @@ function generate() {
         } else if (palette === 'pastello') {
             cyanShadow = '0 0 10px rgba(221,174,211,0.7), 2px 3px 6px rgba(0,0,0,0.7)';
             altShadow  = '2px 3px 6px rgba(0,0,0,0.7)';
+        } else if (palette === 'giungla') {
+            cyanShadow = '0 0 8px #9DC08B, 2px 2px 0 #1a2918, 3px 4px 0 rgba(0,0,0,0.5)';
+            altShadow  = '2px 2px 0 #1a2918, 3px 4px 0 rgba(0,0,0,0.4)';
+        } else if (palette === 'elettrico') {
+            cyanShadow = '0 0 8px #F4CE14, 2px 2px 0 #5a4a00, 3px 4px 0 rgba(0,0,0,0.5)';
+            altShadow  = '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)';
+        } else if (palette === 'caramella') {
+            cyanShadow = '0 0 8px #FF3F7F, 2px 2px 0 #1a0035, 3px 4px 0 rgba(0,0,0,0.5)';
+            altShadow  = '0 0 8px #FFC400, 2px 2px 0 #1a0035, 3px 4px 0 rgba(0,0,0,0.5)';
+        } else if (palette === 'ferrari') {
+            cyanShadow = '0 0 8px #DA0037, 2px 2px 0 #3a0010, 3px 4px 0 rgba(0,0,0,0.5)';
+            altShadow  = '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)';
         } else {
             // switch e altri: drop shadow originale
             cyanShadow = '0 0 12px var(--neon-cyan), 2px 3px 6px rgba(0,0,0,0.9)';
@@ -405,6 +433,62 @@ function fitTextToContainer() {
             document.getElementById('drawerOverlay').classList.remove('open');
         }
 
+        function toggleAddSection() {
+            const sec = document.getElementById('addSection');
+            const btn = document.getElementById('toggleAddBtn');
+            const isOpen = sec.classList.contains('add-open');
+            sec.classList.toggle('add-open');
+            if (btn) btn.textContent = isOpen ? '+ Aggiungi Voci' : '− Nascondi';
+            // Ricalcola items dopo toggle
+            setTimeout(calcItemsPerPage, 50);
+        }
+
+        function calcItemsPerPage() {
+            const modal = document.getElementById('editorModal');
+            const container = document.getElementById('tableContainer');
+            if (!modal || !container || !modal.classList.contains('editor-open')) return;
+
+            const ROW_H = 52; // altezza fissa delle righe (deve corrispondere al CSS)
+
+            // Misura tutti gli elementi fissi sottraendo dal totale
+            const modalH = modal.clientHeight;
+            const inner = modal.querySelector(':scope > div');
+            const innerPaddingV = 32; // 1rem top + 1rem bottom (mobile: 0.75rem * 2 = 24)
+
+            const header = document.querySelector('#editorModal .flex.justify-between.items-center');
+            const headerH = header ? header.offsetHeight + 16 : 60;
+
+            const toggleBtn = document.getElementById('toggleAddBtn');
+            const isMobile = window.innerWidth < 1024;
+            const toggleH = (isMobile && toggleBtn) ? toggleBtn.offsetHeight + 12 : 0;
+
+            const addSec = document.getElementById('addSection');
+            const addOpen = addSec && addSec.classList.contains('add-open');
+            const addH = addOpen ? addSec.offsetHeight + 16 : 0;
+
+            // Gap tra addSection e tableContainer
+            const gapH = addOpen ? 0 : 0;
+
+            // Dentro tableContainer: padding + search + thead + pagination
+            const tcPadV = 48; // p-6 = 1.5rem * 2
+            const searchRow = container.querySelector(':scope > div:first-child');
+            const searchH = searchRow ? searchRow.offsetHeight + 16 : 70;
+            const thead = container.querySelector('thead');
+            const theadH = thead ? thead.offsetHeight : 44;
+            const pagination = document.getElementById('paginationBar');
+            const paginationH = pagination ? pagination.offsetHeight + 12 : 52;
+
+            const pad = isMobile ? 24 : innerPaddingV;
+            const available = modalH - pad - headerH - toggleH - addH - gapH - tcPadV - searchH - theadH - paginationH;
+            const newItems = Math.max(1, Math.floor(available / ROW_H));
+
+            if (newItems !== itemsPerPage) {
+                itemsPerPage = newItems;
+                currentPage = 1;
+                renderTable();
+            }
+        }
+
         window.addEventListener('keydown', (e) => {
             // Controlla se l'utente sta scrivendo in un input, textarea o un elemento contenteditable
             const isEditing = [ 'INPUT', 'TEXTAREA' ].includes(document.activeElement.tagName) ||
@@ -439,8 +523,12 @@ function fitTextToContainer() {
             { id: 'cioccolato', label: 'Cioccolato' },
             { id: 'halloween',  label: 'Halloween'  },
             { id: 'retrowave',  label: 'Retrowave'  },
+            { id: 'elettrico',  label: 'Elettrico'  },
+            { id: 'ferrari',    label: 'Ferrari'    },
             { id: 'cyberpunk',  label: 'Cyberpunk'  },
             { id: 'pastello',   label: 'Pastello'   },
+            { id: 'giungla',    label: 'Giungla'    },
+            { id: 'caramella',  label: 'Caramella'  },
         ];
 
         function buildPaletteSelectors() {
@@ -460,6 +548,10 @@ function fitTextToContainer() {
             cioccolato:  ['192,133,82',  '75,46,43'],
             halloween:   ['250,129,18',  '34,34,34'],
             pastello:    ['221,174,211',  '101,148,177'],
+            giungla:     ['157,192,139',  '64,81,59'],
+            elettrico:   ['244,206,20',   '69,71,75'],
+            caramella:   ['255,63,127',   '255,196,0'],
+            ferrari:     ['218,0,55',      '68,68,68'],
         };
 
         function applyPalette(name) {
@@ -498,6 +590,18 @@ function fitTextToContainer() {
                     } else if (name === 'pastello') {
                         cyanShadow = '0 0 10px rgba(221,174,211,0.7), 2px 3px 6px rgba(0,0,0,0.7)';
                         altShadow  = '2px 3px 6px rgba(0,0,0,0.7)';
+                    } else if (name === 'giungla') {
+                        cyanShadow = '0 0 8px #9DC08B, 2px 2px 0 #1a2918, 3px 4px 0 rgba(0,0,0,0.5)';
+                        altShadow  = '2px 2px 0 #1a2918, 3px 4px 0 rgba(0,0,0,0.4)';
+                    } else if (name === 'elettrico') {
+                        cyanShadow = '0 0 8px #F4CE14, 2px 2px 0 #5a4a00, 3px 4px 0 rgba(0,0,0,0.5)';
+                        altShadow  = '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)';
+                    } else if (name === 'caramella') {
+                        cyanShadow = '0 0 8px #FF3F7F, 2px 2px 0 #1a0035, 3px 4px 0 rgba(0,0,0,0.5)';
+                        altShadow  = '0 0 8px #FFC400, 2px 2px 0 #1a0035, 3px 4px 0 rgba(0,0,0,0.5)';
+                    } else if (name === 'ferrari') {
+                        cyanShadow = '0 0 8px #DA0037, 2px 2px 0 #3a0010, 3px 4px 0 rgba(0,0,0,0.5)';
+                        altShadow  = '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)';
                     } else {
                         cyanShadow = '0 0 12px var(--neon-cyan), 2px 3px 6px rgba(0,0,0,0.9)';
                         altShadow  = '0 0 12px ' + altColor + ', 2px 3px 6px rgba(0,0,0,0.9)';
