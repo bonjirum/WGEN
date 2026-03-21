@@ -1,64 +1,90 @@
 # ⚡ PACK-A-PUNCHLINER
 
-**PACK-A-PUNCHLINER** è un generatore di parole con database personalizzabile, il cui utilizzo è mirato per i cypher freestyle.
+**PACK-A-PUNCHLINER** è un generatore di parole/frasi con database personalizzabile, progettato per i cypher freestyle. Disponibile su browser desktop e mobile, con un'interfaccia ottimizzata per entrambi.
 
 ---
 
-## Funzionalità Dashboard
+## 📱 Interfaccia Mobile
 
-### Generazione
-<img width="500" height="92" alt="image" src="https://github.com/user-attachments/assets/eedef478-c680-4fe3-8061-ecbbd458c528" />
+Su mobile il tool occupa l'intero schermo senza mai richiedere scroll:
 
+- **Topbar** — mostra il titolo e il selettore del tema grafico
+- **Area di generazione** — occupa tutto lo spazio disponibile tra topbar e bottombar; il testo generato si adatta automaticamente in dimensione per riempire lo spazio
+- **Bottombar** — contiene il selettore quantità (−/+), il tasto **GENERA** e il tasto ☰ per aprire il drawer
+- **Drawer** — pannello che sale dal basso con i filtri categoria, shuffle, e tutti i controlli del database
 
-- **Selettore Quantità:** Permette di estrarre da 1 a 10 elementi contemporaneamente.
-- **Genera:** Estrae casualmente entità dal database rispettando i filtri attivi.
-- **Supporto Tastiera:** Premendo il tasto <kbd>SPAZIO</kbd> è possibile generare nuovi risultati senza interruzioni.
+## 🖥 Interfaccia Desktop
 
-### Gestione del Mazzo (Shuffle Logic)
-Il sistema utilizza una logica a "mazzo chiuso" per garantire varietà:
-- Una parola non verrà ripetuta finché tutte le altre parole del pool selezionato non sono state estratte.
-- Il tasto **SHUFFLE** resetta il mazzo attuale e rimescola l'intero database.
-- Qualsiasi modifica ai filtri resetta il mazzo attuale e rimescola l'intero database.
+Su desktop il layout è a colonne: la colonna principale contiene l'area di generazione e i controlli, la colonna laterale contiene i filtri e i pulsanti database.
 
-### Filtri Categoria
-<img width="360" height="172" alt="image" src="https://github.com/user-attachments/assets/54bdb759-74da-4eeb-a3dc-842614fb15cb" />
+---
 
-- I tag sono selezionabili nella colonna laterale. 
-- Quando un tag è attivo, la generazione è limitata esclusivamente alle voci che lo contengono.
-- È possibile attivare più tag contemporaneamente per un'estrazione combinata.
+## 🎨 Temi Grafici
 
+Il tool include 4 temi selezionabili dal dropdown "TEMA:" nella topbar (mobile) o nell'header (desktop). Il tema scelto viene salvato e ripristinato automaticamente alle visite successive.
 
+| Tema | Descrizione |
+|---|---|
+| **Switch** | Teal e rosso su sfondo antracite — default |
+| **Cyberpunk** | Cyan e magenta su sfondo nero |
+| **Retrowave** | Rosso e arancione su sfondo viola scuro |
+| **Marvin** | Teal su sfondo bianco — alta leggibilità in ambienti luminosi |
 
+---
 
+## ⚙️ Generazione
+
+- **Selettore Quantità** — estrai da 1 a 10 elementi contemporaneamente tramite i tasti −/+
+- **GENERA** — estrae casualmente elementi dal database rispettando i filtri attivi; il testo generato alterna due colori del tema per distinguere facilmente le voci
+- **Tasto SPAZIO** *(solo desktop)* — genera nuovi risultati senza usare il mouse
+
+### Shuffle Logic (mazzo chiuso)
+Il sistema garantisce varietà con una logica a "mazzo chiuso":
+- Una voce non viene ripetuta finché tutte le altre del pool selezionato non sono state estratte almeno una volta
+- **SHUFFLE** resetta e rimescola il mazzo attuale
+- Qualsiasi modifica ai filtri resetta automaticamente il mazzo
+
+---
+
+## 🏷 Filtri Categoria
+
+I tag sono selezionabili dal pannello filtri (colonna laterale su desktop, drawer su mobile):
+
+- Quando un tag è attivo, la generazione è limitata alle voci che lo contengono
+- È possibile attivare più tag contemporaneamente per estrazioni combinate
+- Il contatore accanto a ogni tag mostra quante voci appartengono a quella categoria
 
 ---
 
 ## 🛠 Database Editor
-<img width="362" height="78" alt="image" src="https://github.com/user-attachments/assets/d64da43c-7a9c-42be-a7c3-202b841a84e6" />
 
-Il pannello Editor permette il controllo totale sui dati salvati nel `localStorage` del browser.
+Il pannello editor permette il controllo totale sui dati salvati nel `localStorage` del browser.
 
 ### Inserimento Massivo
-<img width="1171" height="340" alt="image" src="https://github.com/user-attachments/assets/e5843d0e-8f61-49cf-b6b5-d18fb43c1a5e" />
+- Inserisci decine di voci contemporaneamente nell'area di testo, una per riga
+- Seleziona i tag da assegnare tramite i pulsanti rapidi, oppure inseriscili manualmente separati da virgola
+- Le voci già presenti non vengono duplicate: se una voce esiste già, vengono aggiunti solo i tag nuovi
 
-- **Area di Testo:** Inserisci decine di voci contemporaneamente (una per riga).
-- **Tag:** Seleziona i tag esistenti tramite i pulsanti rapidi per assegnarli velocemente alle nuove voci, oppure inseriscili manualmente nel box di testo dedicato.
-
-### Gestione Archivio (Tabella)
-<img width="1127" height="472" alt="image" src="https://github.com/user-attachments/assets/a39f5d4d-79ab-4dd8-9c49-46b58049a3f5" />
-
-- **Ricerca Intelligente:** Barra di ricerca testuale e filtri per tag per trovare voci specifiche in database estesi.
-- **Editing Dinamico:** - Rimuovi tag cliccando sulla `×` accanto ad essi.
-  - Aggiungi nuovi tag esistenti tramite il menu a tendina `+` direttamente in riga.
-- **Eliminazione:** Rimozione definitiva di singole voci.
+### Gestione Archivio
+- **Ricerca testuale** e **filtri per tag** per trovare voci specifiche in database estesi
+- **Editing inline** — clicca su una voce per modificarla direttamente
+- **Rimuovi tag** cliccando sulla `×` accanto ad essi
+- **Aggiungi tag** esistenti tramite il menu a tendina `+` direttamente in riga
+- **Elimina** per la rimozione definitiva di singole voci
+- Navigazione paginata per database grandi
 
 ---
 
 ## 💾 Backup e Importazione
-<img width="332" height="116" alt="image" src="https://github.com/user-attachments/assets/823b1f1c-1dbb-4562-af2a-30762a25e1ef" />
 
-- **Export:** Esporta il tuo intero database personalizzato in formato `.json`.
-- **Import:** Carica file backup precedentemente creati. La procedura aggiunge le voci al database che potreste avere già creato, rimuovendo eventuali duplicati.
-- **Default DB:** Carica il database di default attualmente composto da 800+ voci.
+- **Export** — esporta l'intero database in formato `.json`
+- **Import** — carica un file `.json` precedentemente esportato; le voci vengono aggiunte a quelle esistenti, i duplicati vengono ignorati e i tag vengono unificati
+- **Carica DB Default** — carica il database predefinito con 800+ voci. Richiede un server HTTP (funziona automaticamente su GitHub Pages; in locale usa Live Server o `python -m http.server`)
 
 ---
+
+## 🌐 Deploy
+
+Il tool è un singolo file `index.html` — basta caricarlo su qualsiasi hosting statico. Il database predefinito (`db-argomenti-v1.json`) deve trovarsi nella stessa cartella.
+
+I dati del database personalizzato vengono salvati nel `localStorage` del browser: sono locali alla macchina e al browser utilizzato. Per trasferire il database tra dispositivi usa la funzione Export/Import.

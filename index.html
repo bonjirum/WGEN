@@ -4,31 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pack-a-Punchliner</title>
-    <script>
-      document.addEventListener('touchstart', function(e) {
-        if (e.touches.length > 1) e.preventDefault();
-      }, { passive: false });
-      let lastTap = 0;
-      document.addEventListener('touchend', function(e) {
-        const tag = e.target.tagName;
-        if (['BUTTON', 'INPUT', 'TEXTAREA', 'SELECT', 'A'].includes(tag)) return;
-        const now = Date.now();
-        if (now - lastTap < 300) e.preventDefault();
-        lastTap = now;
-      }, { passive: false });
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- un banale counter visitatori, niente di sketchy controllate pure -->
     <script data-goatcounter="https://bonjirum.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
 
         :root {
             --neon-cyan: #00fff2;
+            --neon-cyan-rgb: 0,255,242;
             --neon-pink: #ff00ff;
             --bg-dark: #050b14;
+            --bg-drawer: #0d1626;
             --bg-panel: #0a1120;
+            --topbar-h: 46px;
+            --bottombar-h: 68px;
         }
+
+        /* PALETTE: RETROWAVE */
+        :root[data-palette="retrowave"] {
+            --grad-rgb-1: 222, 26, 88;
+            --grad-rgb-2: 246, 125, 49;
+            --neon-cyan: #DE1A58;
+            --neon-cyan-rgb: 222,26,88;
+            --neon-pink: #F67D31;
+            --bg-dark: #07011a;
+            --bg-drawer: #130838;
+            --bg-panel: #0f0230;
+            --alt-color: #F67D31;
+            --title-grad: linear-gradient(to right, #1A05A2 0%, #DE1A58 50%, #F67D31 100%);
+            --neon-pink-dark: #c55a10;
+            --neon-pink-glow: rgba(246,125,49,0.45);
+            --btn-primary-text: #fff;
+        }
+
+        /* PALETTE: FUTURE */
+        :root[data-palette="marvin"] {
+            --neon-cyan: #00ADB5;
+            --neon-cyan-rgb: 0,173,181;
+            --neon-pink: #00ADB5;
+            --bg-dark: #222831;
+            --bg-drawer: #2d3542;
+            --bg-panel: #ffffff;
+            --alt-color: #000000;
+            --title-grad: linear-gradient(to right, #00ADB5 0%, #EEEEEE 50%, #00ADB5 100%);
+            --neon-pink-dark: #007a80;
+            --neon-pink-glow: rgba(0,173,181,0.45);
+            --btn-primary-text: #fff;
+        }
+
+        /* PALETTE: SWITCH */
+        :root[data-palette="switch"] {
+            --grad-rgb-1: 8, 217, 214;
+            --grad-rgb-2: 255, 46, 99;
+            --neon-cyan: #08D9D6;
+            --neon-cyan-rgb: 8,217,214;
+            --neon-pink: #FF2E63;
+            --bg-dark: #252A34;
+            --bg-drawer: #303845;
+            --bg-panel: #2e3446;
+            --alt-color: #FF2E63;
+            --title-grad: linear-gradient(to right, #08D9D6 0%, #EAEAEA 50%, #FF2E63 100%);
+            --neon-pink-dark: #c0003d;
+            --neon-pink-glow: rgba(255,46,99,0.45);
+            --btn-primary-text: #fff;
+        }
+
+        /* PALETTE: CYBERPUNK (default) */
+        :root[data-palette="cyberpunk"], :root {
+            --grad-rgb-1: 0, 255, 242;
+            --grad-rgb-2: 188, 19, 254;
+            --alt-color: #ffffff;
+            --title-grad: linear-gradient(to right, var(--neon-cyan) 0%, white 50%, var(--neon-pink) 100%);
+            --neon-pink-dark: #c000c0;
+            --neon-pink-glow: rgba(255,0,255,0.45);
+            --btn-primary-text: #fff;
+        }
+
+        * { touch-action: manipulation; }
 
         * {
             touch-action: manipulation;
@@ -43,8 +96,8 @@
             background-color: var(--bg-dark);
             color: #e2e8f0;
             background-image:
-                radial-gradient(circle at 10% 20%, rgba(0, 255, 242, 0.05) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(188, 19, 254, 0.05) 0%, transparent 20%);
+                radial-gradient(circle at 10% 20%, rgba(var(--grad-rgb-1), var(--grad-opacity, 0.05)) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(var(--grad-rgb-2), var(--grad-opacity, 0.05)) 0%, transparent 20%);
         }
 
         .cyber-container {
@@ -70,54 +123,42 @@
             text-transform: uppercase;
         }
 
-        /* --- ANIMAZIONI PULSANTI --- */
+        /* --- BOTTONI --- */
         .cyber-button {
-            position: relative;
-            background: transparent;
-            color: var(--neon-cyan);
-            border: 1px solid var(--neon-cyan);
-            z-index: 1;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-weight: 600;
-            overflow: hidden;
-            clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 0.82rem;
+            letter-spacing: 0.03em;
+            padding: 11px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 8px;
             white-space: nowrap;
-        }
-
-        .cyber-button::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 242, 0.4), transparent);
-            transition: all 0.5s;
-            z-index: -1;
+            background: rgba(var(--neon-cyan-rgb, 0,255,242), 0.04);
+            color: var(--neon-cyan);
+            border: 1px solid rgba(var(--neon-cyan-rgb, 0,255,242), 0.25);
+            text-transform: uppercase;
+            opacity: 0.75;
         }
 
         .cyber-button:hover:not(:disabled) {
-            color: #fff;
-            background: rgba(0, 255, 242, 0.1);
-            box-shadow: 0 0 20px rgba(0, 255, 242, 0.4), inset 0 0 15px rgba(0, 255, 242, 0.2);
-            text-shadow: 0 0 8px #fff;
-            border-color: #fff;
+            border-color: rgba(var(--neon-cyan-rgb, 0,255,242), 0.6);
+            opacity: 1;
+            box-shadow: 0 0 12px rgba(var(--neon-cyan-rgb, 0,255,242), 0.15);
         }
-
-        .cyber-button:hover:not(:disabled)::before { left: 100%; }
+        .cyber-button:active { opacity: 0.6; }
 
         .button-primary {
-            color: var(--neon-pink) !important;
-            border-color: var(--neon-pink) !important;
+            background: linear-gradient(135deg, var(--neon-pink), var(--neon-pink-dark)) !important;
+            color: var(--btn-primary-text, #fff) !important;
+            border: none !important;
+            font-weight: 600 !important;
         }
-        .button-primary::before { background: linear-gradient(90deg, transparent, rgba(255, 0, 255, 0.4), transparent); }
         .button-primary:hover:not(:disabled) {
-            background: rgba(255, 0, 255, 0.1) !important;
-            box-shadow: 0 0 25px rgba(255, 0, 255, 0.5) !important;
-            border-color: #fff !important;
+            box-shadow: 0 0 20px var(--neon-pink-glow) !important;
+            color: var(--btn-primary-text, #fff) !important;
         }
 
         .cyber-toast {
@@ -129,35 +170,44 @@
             font-size: 0.75rem; pointer-events: none;
         }
 
-        /* Animazione Arancione per Carica DB */
-        .button-orange {
-            color: #f97316 !important;
-            border-color: #f97316 !important;
-        }
-        .button-orange::before {
-            background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.4), transparent) !important;
-        }
-        .button-orange:hover:not(:disabled) {
-            background: rgba(249, 115, 22, 0.1) !important;
-            box-shadow: 0 0 20px rgba(249, 115, 22, 0.4) !important;
+        @media (max-width: 1023px) {
+            .cyber-toast {
+                top: var(--topbar-h);
+                right: 0; left: 0;
+                border-radius: 0;
+                border-left: none;
+                border-bottom: 2px solid var(--neon-cyan);
+                text-align: center;
+                padding: 10px 16px;
+                font-size: 0.68rem;
+            }
         }
 
-        /* Animazione Verde per Manuale */
-        .button-green {
-            color: #22c55e !important;
-            border-color: #22c55e !important;
+        /* Arancione per Carica DB */
+        .button-orange {
+            background: linear-gradient(135deg, #f97316, #ea580c) !important;
+            color: #fff !important;
+            border: none !important;
         }
-        .button-green::before {
-            background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.4), transparent) !important;
+        .button-orange:hover:not(:disabled) {
+            box-shadow: 0 0 18px rgba(249,115,22,0.4) !important;
+            color: #fff !important;
+        }
+
+        /* Verde per Manuale */
+        .button-green {
+            background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+            color: #fff !important;
+            border: none !important;
         }
         .button-green:hover:not(:disabled) {
-            background: rgba(34, 197, 94, 0.1) !important;
-            box-shadow: 0 0 20px rgba(34, 197, 94, 0.4) !important;
+            box-shadow: 0 0 18px rgba(34,197,94,0.35) !important;
+            color: #fff !important;
         }
 
         #editorModal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(5, 11, 20, 0.98); z-index: 100;
+            background: var(--bg-dark); z-index: 100;
             display: none; overflow-y: auto; padding: 1rem;
         }
 
@@ -172,36 +222,161 @@
             cursor: text;
         }
 
+
+        /* ══ MOBILE ONLY ══ */
+        @media (max-width: 1023px) {
+            html, body { height: 100dvh; overflow: hidden; padding: 0 !important; margin: 0; }
+            .desktop-only { display: none !important; }
+
+            #mobileTopbar {
+                position: fixed; top: 0; left: 0; right: 0;
+                height: var(--topbar-h);
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 0 14px;
+                background: var(--bg-dark);
+                border-bottom: 1px solid rgba(0,255,242,0.15);
+                z-index: 50;
+            }
+            #mobileTopbar h1 {
+                font-size: 0.82rem; font-weight: 800;
+                letter-spacing: 0.14em; text-transform: uppercase;
+                background: var(--title-grad);
+                -webkit-background-clip: text; background-clip: text;
+                color: transparent; white-space: nowrap;
+                display: inline-block;
+            }
+            #displayArea {
+                position: fixed !important;
+                top: var(--topbar-h) !important; left: 0 !important;
+                right: 0 !important; bottom: var(--bottombar-h) !important;
+                height: auto !important;
+                border-radius: 0 !important;
+                border-left: none !important; border-right: none !important;
+                padding: 16px !important;
+
+            }
+            #mobileBottombar {
+                position: fixed; bottom: 0; left: 0; right: 0;
+                height: var(--bottombar-h);
+                display: flex; align-items: center; gap: 8px; padding: 0 10px;
+                background: var(--bg-dark);
+                border-top: 1px solid rgba(0,255,242,0.15);
+                z-index: 50;
+            }
+            .mob-counter {
+                display: flex; align-items: center;
+                background: var(--bg-panel);
+                border: 1px solid rgba(0,255,242,0.2);
+                border-radius: 999px; padding: 0 6px;
+                height: 46px; flex-shrink: 0;
+            }
+            .mob-counter button {
+                width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+                color: var(--neon-cyan); font-size: 1.3rem; font-weight: bold;
+                background: none; border: none; font-family: 'Rajdhani', sans-serif;
+            }
+            .mob-counter input {
+                background: transparent; border: none; width: 26px; text-align: center;
+                color: var(--neon-cyan); font-weight: bold; font-size: 1.05rem;
+                outline: none; font-family: 'Rajdhani', sans-serif;
+            }
+            #menuBtn {
+                width: 46px; height: 46px; flex-shrink: 0;
+                display: flex; align-items: center; justify-content: center;
+                background: var(--bg-panel); border: 1px solid rgba(0,255,242,0.2);
+                border-radius: 10px; color: var(--neon-cyan);
+            }
+            #drawerOverlay {
+                position: fixed; inset: 0; z-index: 48;
+                background: rgba(0,0,0,0.55); display: none;
+            }
+            #drawerOverlay.open { display: block; }
+            #drawer {
+                position: fixed; bottom: var(--bottombar-h); left: 0; right: 0;
+                background: var(--bg-drawer);
+                border-top: 1px solid rgba(var(--neon-cyan-rgb, 0,255,242),0.2);
+                border-radius: 18px 18px 0 0; z-index: 49;
+                transform: translateY(100%);
+                transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+                max-height: calc(100dvh - var(--topbar-h) - var(--bottombar-h));
+                overflow-y: auto; padding: 10px 14px 18px;
+            }
+            #drawer.open { transform: translateY(0); }
+            .drawer-handle {
+                width: 36px; height: 4px;
+                background: rgba(0,255,242,0.2);
+                border-radius: 2px; margin: 0 auto 12px;
+            }
+        }
+        @media (min-width: 1024px) {
+            #mobileTopbar, #mobileBottombar, #drawer, #drawerOverlay { display: none !important; }
+            body { display: block; }
+            /* displayArea torna statico e va nel grid tramite JS */
+        }
+        .palette-select {
+            background: var(--bg-dark) !important;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            padding: 2px 6px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--neon-cyan);
+            outline: none;
+            cursor: pointer;
+        }
+
         .animate-fade { animation: bounce-in 0.3s ease-out; }
         @keyframes bounce-in { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
 
-    <div class="max-w-5xl mx-auto">
+    <!-- MOBILE TOPBAR -->
+    <div id="mobileTopbar">
+        <h1>PACK-A-PUNCHLINER</h1>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+            <span style="font-family:'Rajdhani',sans-serif;font-size:0.58rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);">TEMA:</span>
+            <select id="paletteSelectorMobile" onchange="applyPalette(this.value)" class="palette-select">
+            </select>
+        </div>
+    </div>
+
+    <!-- DISPLAY AREA: sempre nel DOM, posizionato via CSS -->
+    <div id="displayArea" class="cyber-container rounded-3xl p-10 flex flex-col items-center justify-center text-center" style="height: 450px; overflow: hidden;">
+        <p class="text-slate-600 italic uppercase text-xs">In attesa...</p>
+    </div>
+
+    <!-- DESKTOP WRAPPER -->
+    <div class="max-w-5xl mx-auto desktop-only">
         <header class="text-center mb-6">
-            <h1 class="text-5xl md:text-6xl font-extrabold uppercase tracking-wider"
-                style="text-shadow: 0 0 10px rgba(0,255,242,0.5); background: linear-gradient(to right, var(--neon-cyan), white, var(--neon-pink)); -webkit-background-clip: text; color: transparent;">
-                PACK-A-PUNCHLINER
+            <h1 class="text-5xl md:text-6xl font-extrabold uppercase tracking-wider">
+                <span style="background: var(--title-grad); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; display: inline; filter: drop-shadow(0 0 8px rgba(0,255,242,0.4));">PACK-A-PUNCHLINER</span>
             </h1>
-            <p class="hidden md:block text-cyan-800 mt-4 font-mono uppercase tracking-widest text-sm">
-                Premi <kbd class="px-2 py-1 bg-slate-900 border border-cyan-900 rounded text-xs text-cyan-400">SPAZIO</kbd> per generare
-            </p>
+            <div class="hidden md:flex items-center justify-center gap-6 mt-4">
+                <p class="text-cyan-800 font-mono uppercase tracking-widest text-sm">
+                    Premi <kbd class="px-2 py-1 bg-slate-900 border border-cyan-900 rounded text-xs text-cyan-400">SPAZIO</kbd> per generare
+                </p>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <span style="font-family:'Rajdhani',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);">TEMA:</span>
+                    <select id="paletteSelectorDesktop" onchange="applyPalette(this.value)" class="palette-select" style="font-size:0.7rem;padding:4px 10px;border-radius:8px;">
+                    </select>
+                </div>
+            </div>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-8 space-y-6">
-                <div id="displayArea" class="cyber-container rounded-3xl p-10 flex flex-col items-center justify-center gap-4 text-center" style="height: 450px; overflow: hidden;">
-                    <p class="text-slate-600 italic uppercase text-xs">In attesa...</p>
-                </div>
-
+                <div id="displayAreaSlot"></div>
                 <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
                     <div class="flex flex-row items-center justify-center gap-4 w-full sm:w-auto">
-                        <div class="flex items-center gap-1 cyber-container px-4 py-2 rounded-full h-[58px]">
-                            <button onclick="adjustCount(-1)" class="w-8 h-8 flex items-center justify-center text-cyan-500 hover:text-white font-bold text-xl">-</button>
-                            <input type="number" id="wordCount" value="1" min="1" max="10"
+                        <div class="flex items-center gap-1 px-4 py-2 rounded-full h-[58px]" style="background:var(--bg-dark);border:1px solid rgba(0,255,242,0.2);">
+                            <button onclick="adjustCount(-1)" class="w-8 h-8 flex items-center justify-center font-bold text-xl" style="color:var(--neon-cyan);background:none;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;">−</button>
+                            <input type="number" id="wordCountDesktop" value="1" min="1" max="10"
                                    class="bg-transparent border-none w-10 text-center text-white font-bold text-xl outline-none focus:ring-0">
-                            <button onclick="adjustCount(1)" class="w-8 h-8 flex items-center justify-center text-cyan-500 hover:text-white font-bold text-xl">+</button>
+                            <button onclick="adjustCount(1)" class="w-8 h-8 flex items-center justify-center font-bold text-xl" style="color:var(--neon-cyan);background:none;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;">+</button>
                         </div>
                         <button onclick="generate()" class="cyber-button button-primary px-12 py-4 text-lg flex-1 sm:flex-none h-[58px]">GENERA</button>
                     </div>
@@ -210,7 +385,7 @@
             </div>
 
             <div class="lg:col-span-4 space-y-6">
-                <div class="cyber-container rounded-2xl p-6">
+                <div class="rounded-2xl p-6" style="background:var(--bg-dark);border:1px solid rgba(0,255,242,0.15);">
                     <h3 class="text-[10px] text-cyan-500 font-bold uppercase mb-4 tracking-widest">Filtri Categoria</h3>
                     <div id="tagFilters" class="flex flex-wrap gap-2"></div>
                 </div>
@@ -228,6 +403,46 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- MOBILE BOTTOMBAR -->
+    <div id="mobileBottombar">
+        <div class="mob-counter">
+            <button onclick="adjustCount(-1)" style="font-family:'Rajdhani',sans-serif;font-weight:700;">−</button>
+            <input type="number" id="wordCount" value="1" min="1" max="10">
+            <button onclick="adjustCount(1)" style="font-family:'Rajdhani',sans-serif;font-weight:700;">+</button>
+        </div>
+        <button onclick="generate()" class="cyber-button button-primary text-sm flex-1" style="height:46px;letter-spacing:3px;">GENERA</button>
+        <button id="menuBtn" onclick="toggleDrawer()">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- DRAWER OVERLAY -->
+    <div id="drawerOverlay" onclick="closeDrawer()"></div>
+
+    <!-- MOBILE DRAWER -->
+    <div id="drawer">
+        <div class="drawer-handle"></div>
+        <div class="mb-3">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-[10px] text-cyan-500 font-bold uppercase tracking-widest">Filtri Categoria</h3>
+                <button onclick="resetDeck();closeDrawer();" class="cyber-button px-3 py-1 text-[10px]">Shuffle</button>
+            </div>
+            <div id="tagFiltersMobile" class="flex flex-wrap gap-2"></div>
+        </div>
+        <div style="height:1px;background:rgba(0,255,242,0.1);margin:10px 0;"></div>
+        <div class="flex flex-col gap-2">
+            <button onclick="openEditor();closeDrawer();" class="cyber-button w-full py-3 text-sm">Apri Database</button>
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="exportData()" class="cyber-button py-2 text-[10px]">Export</button>
+                <button onclick="document.getElementById('importFile').click()" class="cyber-button py-2 text-[10px]">Import</button>
+            </div>
+            <button onclick="loadDefaultDB()" class="cyber-button button-orange w-full py-2 text-[10px] border-dashed">Carica DB Default</button>
+            <a href="https://github.com/bonjirum/WGEN/blob/master/README.md" target="_blank" class="cyber-button button-green w-full py-2 text-[10px]">MANUALE</a>
+        </div>
     </div>
 
     <div id="editorModal">
@@ -249,7 +464,7 @@
                 </div>
             </div>
 
-            <div class="cyber-container rounded-2xl p-6">
+            <div class="rounded-2xl p-6" style="background:var(--bg-dark);border:1px solid rgba(0,255,242,0.15);">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                     <input type="text" id="tableSearch" oninput="handleTableSearch()" placeholder="Cerca..." class="cyber-input w-full sm:w-80 rounded-lg px-4 py-2 text-xs">
                     <div id="archiveTagFilters" class="flex flex-wrap gap-2"></div>
@@ -304,13 +519,25 @@
         function openEditor() { document.getElementById('editorModal').style.display = 'block'; document.body.style.overflow = 'hidden'; init(); }
         function closeEditor() { document.getElementById('editorModal').style.display = 'none'; document.body.style.overflow = 'auto'; }
 
+        let _toastTimeout = null;
         function showNotification(m) {
+            // Rimuovi toast esistente
+            const existing = document.querySelector('.cyber-toast');
+            if (existing) existing.remove();
+            if (_toastTimeout) clearTimeout(_toastTimeout);
             const t = document.createElement('div'); t.className = 'cyber-toast animate-fade'; t.innerText = m;
-            document.body.appendChild(t); setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 3000);
+            document.body.appendChild(t);
+            _toastTimeout = setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 1500);
         }
 
         function resetDeck() { currentDeck = []; showNotification("POOL RESETTATO"); }
-        function adjustCount(v) { let i = document.getElementById('wordCount'); let n = parseInt(i.value)+v; if(n>=1 && n<=10) i.value=n; }
+        function adjustCount(v) {
+            const mob = document.getElementById('wordCount');
+            const desk = document.getElementById('wordCountDesktop');
+            const cur = parseInt((mob || desk).value);
+            const n = cur + v;
+            if (n >= 1 && n <= 10) { if(mob) mob.value=n; if(desk) desk.value=n; }
+        }
 
         function updateQuickSelect() {
             const container = document.getElementById('quickSelectTags');
@@ -397,7 +624,7 @@
                         </div>
                     </td>
                     <td class="p-4 text-right">
-                        <button onclick="deleteWord(${idx})" class="text-pink-900 hover:text-pink-500 text-[9px] uppercase font-bold">Elimina</button>
+                        <button onclick="deleteWord(${idx})" style="font-family:'Rajdhani',sans-serif;font-size:0.65rem;font-weight:700;background:none;border:none;color:#7f1d1d;cursor:pointer;text-transform:uppercase;transition:color 0.2s;" onmouseover="this.style.color='#ff2e63'" onmouseout="this.style.color='#7f1d1d'">Elimina</button>
                     </td>
                 </tr>`;
             }).join('');
@@ -489,7 +716,7 @@
             const allTags = Object.keys(tagCounts).sort();
 
             // 3. Generiamo l'HTML con i numeri e lo stile più grande (px-4 py-2 e text-xs)
-            container.innerHTML = allTags.map(t => {
+            const tagsHtml = allTags.map(t => {
                 const active = activeTags.has(t);
                 const count = tagCounts[t];
                 return `
@@ -499,6 +726,9 @@
                         ${t} (${count})
                     </button>`;
             }).join('');
+            container.innerHTML = tagsHtml;
+            const mob = document.getElementById('tagFiltersMobile');
+            if (mob) mob.innerHTML = tagsHtml;
         }
 
         function toggleTag(t) {
@@ -510,7 +740,8 @@
 
 function generate() {
     const display = document.getElementById('displayArea');
-    const count = parseInt(document.getElementById('wordCount').value);
+    const _wc = document.getElementById('wordCount') || document.getElementById('wordCountDesktop');
+    const count = parseInt(_wc.value);
 
     // Filtra le parole in base ai tag attivi
     let filtered = activeTags.size > 0
@@ -535,9 +766,38 @@ function generate() {
         results.push(picked.text);
     }
 
-    display.innerHTML = results.map(res =>
-        `<div class="animate-fade font-extrabold text-white text-center" style="text-shadow: 0 0 10px var(--neon-cyan); overflow-wrap: normal; word-break: keep-all; hyphens: none; line-height: 1.1;">${res}</div>`
-    ).join('');
+    display.innerHTML = results.map((res, i) => {
+        const isCyan = i % 2 === 0;
+        const color = isCyan ? 'var(--neon-cyan)' : 'var(--alt-color)';
+        const altColor = getComputedStyle(document.documentElement).getPropertyValue('--alt-color').trim();
+        const palette = document.documentElement.getAttribute('data-palette') || 'switch';
+
+        let shadow;
+        if (palette === 'cyberpunk') {
+            // Opzione D: blocco solida + glow neon sul bianco
+            const cyanShadow = '2px 3px 0px #003d3c, 0 0 14px rgba(0,255,242,0.5)';
+            const whiteShadow = '2px 3px 0px #333333, 0 0 14px rgba(255,255,255,0.4)';
+            shadow = isCyan ? cyanShadow : whiteShadow;
+        } else if (palette === 'retrowave') {
+            // Opzione D: blocco solida colorata
+            const cyanShadow = '2px 3px 0px #6b0022';
+            const altShadow  = '2px 3px 0px #7a3000';
+            shadow = isCyan ? cyanShadow : altShadow;
+        } else if (palette === 'marvin') {
+            // Opzione C: ombra azzurra chiara
+            const cyanShadow = '1px 2px 0px rgba(0,173,181,0.35), 0 0 10px rgba(0,173,181,0.25)';
+            const isAltDark = altColor === '#000000' || altColor === '#000' || altColor.toLowerCase() === '#000000';
+            const altShadow  = isAltDark ? 'none' : '1px 2px 0px rgba(0,173,181,0.25)';
+            shadow = isCyan ? cyanShadow : altShadow;
+        } else {
+            // Switch e altri: glow + ombra scura
+            const cyanShadow = '0 0 12px var(--neon-cyan), 2px 3px 6px rgba(0,0,0,0.9)';
+            const isAltDark = altColor === '#000000' || altColor === '#000' || altColor.toLowerCase() === '#000000';
+            const altShadow  = isAltDark ? 'none' : `0 0 12px ${altColor}, 2px 3px 6px rgba(0,0,0,0.9)`;
+            shadow = isCyan ? cyanShadow : altShadow;
+        }
+        return `<div class="animate-fade font-extrabold text-center" style="color:${color}; text-shadow:${shadow}; overflow-wrap:normal; word-break:keep-all; hyphens:none; line-height:0.94;">${res}</div>`;
+    }).join('');
     fitTextToContainer();
 }
 
@@ -546,29 +806,45 @@ function fitTextToContainer() {
     const items = display.querySelectorAll('div.animate-fade');
     if (!items.length) return;
 
-    const padding = 40;
-    const availableWidth = display.clientWidth - padding * 2;
-    const availableHeight = display.clientHeight - padding * 2;
+    const pad = 32;
+    const availableWidth = display.clientWidth - pad * 2;
+    const availableHeight = display.clientHeight - pad * 2;
 
+    // Setup iniziale
     items.forEach(el => {
         el.style.width = availableWidth + 'px';
         el.style.flexShrink = '0';
         el.style.whiteSpace = 'normal';
+        el.style.marginBottom = '0';
     });
 
-    // Binary search per il font size massimo che fa stare tutto
-    let lo = 8, hi = 100;
+    // Binary search: gap = 0.7 * fontSize
+    let lo = 8, hi = 42;
     while (lo < hi) {
         const mid = Math.ceil((lo + hi) / 2);
+        const gap = Math.round(mid * 0.7);
         items.forEach(el => el.style.fontSize = mid + 'px');
-        const gap = 12 * (items.length - 1);
-        const totalH = Array.from(items).reduce((sum, el) => sum + el.scrollHeight, 0) + gap;
-        // Controlla anche che nessuna parola sfori in larghezza
-        const anyOverflow = Array.from(items).some(el => el.scrollWidth > availableWidth + 2);
+        const totalH = Array.from(items).reduce((sum, el) => sum + el.scrollHeight, 0)
+                      + gap * (items.length - 1);
+        const anyOverflow = Array.from(items).some(el => el.scrollWidth > availableWidth + 1);
         if (totalH <= availableHeight && !anyOverflow) lo = mid;
         else hi = mid - 1;
     }
-    items.forEach(el => el.style.fontSize = lo + 'px');
+
+    // Applica font finale e gap come margin-bottom tranne sull'ultimo
+    const finalGap = Math.round(lo * 0.7);
+    const itemsArr = Array.from(items);
+    itemsArr.forEach((el, i) => {
+        el.style.fontSize = lo + 'px';
+        el.style.marginBottom = i < itemsArr.length - 1 ? finalGap + 'px' : '0';
+    });
+
+    // Centra verticalmente con padding-top
+    const totalH = itemsArr.reduce((sum, el) => sum + el.scrollHeight, 0)
+                  + finalGap * (itemsArr.length - 1);
+    const topPad = Math.max(pad, (display.clientHeight - totalH) / 2);
+    display.style.paddingTop = topPad + 'px';
+    display.style.paddingBottom = topPad + 'px';
 }
 
         function exportData() { const dl = document.createElement('a'); dl.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(words))); dl.setAttribute("download", "backup.json"); dl.click(); }
@@ -616,6 +892,15 @@ function fitTextToContainer() {
             event.target.value = '';
         }
 
+        function toggleDrawer() {
+            document.getElementById('drawer').classList.toggle('open');
+            document.getElementById('drawerOverlay').classList.toggle('open');
+        }
+        function closeDrawer() {
+            document.getElementById('drawer').classList.remove('open');
+            document.getElementById('drawerOverlay').classList.remove('open');
+        }
+
         window.addEventListener('keydown', (e) => {
             // Controlla se l'utente sta scrivendo in un input, textarea o un elemento contenteditable
             const isEditing = [ 'INPUT', 'TEXTAREA' ].includes(document.activeElement.tagName) ||
@@ -627,6 +912,97 @@ function fitTextToContainer() {
             }
         });
         document.getElementById('newTags').addEventListener('input', updateQuickSelect);
+        function placeDisplayArea() {
+            const slot = document.getElementById('displayAreaSlot');
+            const da = document.getElementById('displayArea');
+            if (!slot || !da) return;
+            if (window.innerWidth >= 1024) {
+                da.style.position = 'static';
+                da.style.height = '450px';
+                da.style.borderRadius = '';
+                da.style.border = '';
+                da.style.padding = '40px';
+                slot.innerHTML = '';
+                slot.appendChild(da);
+            }
+        }
+        placeDisplayArea();
+        window.addEventListener('resize', placeDisplayArea);
+
+        // ── PALETTE SWITCHER ──
+        const PALETTES = [
+            { id: 'switch',    label: 'Switch'    },
+            { id: 'cyberpunk', label: 'Cyberpunk' },
+            { id: 'retrowave', label: 'Retrowave' },
+            { id: 'marvin',    label: 'Marvin'    },
+        ];
+
+        function buildPaletteSelectors() {
+            ['paletteSelectorMobile', 'paletteSelectorDesktop'].forEach(id => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                sel.innerHTML = PALETTES.map(p =>
+                    `<option value="${p.id}">${p.label}</option>`
+                ).join('');
+            });
+        }
+
+        const PALETTE_GRADIENTS = {
+            cyberpunk: ['0,255,242',   '188,19,254'],
+            retrowave: ['222,26,88',   '246,125,49'],
+            marvin:    ['0,173,181',   '0,173,181'],
+            switch:    ['8,217,214',   '255,46,99'],
+        };
+
+        function applyPalette(name) {
+            document.documentElement.setAttribute('data-palette', name);
+            localStorage.setItem('palette', name);
+            ['paletteSelectorMobile', 'paletteSelectorDesktop'].forEach(id => {
+                const sel = document.getElementById(id);
+                if (sel) sel.value = name;
+            });
+            // Applica gradiente su displayArea
+            const g = PALETTE_GRADIENTS[name] || PALETTE_GRADIENTS['cyberpunk'];
+            const grad = `radial-gradient(circle at 15% 25%, rgba(${g[0]},0.07) 0%, transparent 45%),
+                          radial-gradient(circle at 85% 75%, rgba(${g[1]},0.07) 0%, transparent 45%)`;
+            const da = document.getElementById('displayArea');
+            if (da) da.style.backgroundImage = grad;
+
+            // Ricalcola le shadow degli elementi già generati con i colori del nuovo tema
+            const items = document.querySelectorAll('#displayArea div.animate-fade');
+            if (items.length) {
+                const altColor = getComputedStyle(document.documentElement).getPropertyValue('--alt-color').trim();
+                const isAltDark = altColor === '#000000' || altColor === '#000' || altColor.toLowerCase() === '#000000';
+                items.forEach((el, i) => {
+                    const isCyan = i % 2 === 0;
+                    let shadow;
+                    if (name === 'cyberpunk') {
+                        const cyanShadow = '2px 3px 0px #003d3c, 0 0 14px rgba(0,255,242,0.5)';
+                        const whiteShadow = '2px 3px 0px #333333, 0 0 14px rgba(255,255,255,0.4)';
+                        shadow = isCyan ? cyanShadow : whiteShadow;
+                    } else if (name === 'retrowave') {
+                        const cyanShadow = '2px 3px 0px #6b0022';
+                        const altShadow  = '2px 3px 0px #7a3000';
+                        shadow = isCyan ? cyanShadow : altShadow;
+                    } else if (name === 'marvin') {
+                        const cyanShadow = '1px 2px 0px rgba(0,173,181,0.35), 0 0 10px rgba(0,173,181,0.25)';
+                        const altShadow  = isAltDark ? 'none' : '1px 2px 0px rgba(0,173,181,0.25)';
+                        shadow = isCyan ? cyanShadow : altShadow;
+                    } else {
+                        const cyanShadow = '0 0 12px var(--neon-cyan), 2px 3px 6px rgba(0,0,0,0.9)';
+                        const altShadow  = isAltDark ? 'none' : `0 0 12px ${altColor}, 2px 3px 6px rgba(0,0,0,0.9)`;
+                        shadow = isCyan ? cyanShadow : altShadow;
+                    }
+                    el.style.color = isCyan ? 'var(--neon-cyan)' : 'var(--alt-color)';
+                    el.style.textShadow = shadow;
+                });
+            }
+        }
+
+        buildPaletteSelectors();
+        const savedPalette = localStorage.getItem('palette') || 'switch';
+        applyPalette(savedPalette);
+
         if (_firstLoad) loadDefaultDB(); else init();
     </script>
 </body>
