@@ -1,90 +1,44 @@
 # ⚡ PACK-A-PUNCHLINER
 
-**PACK-A-PUNCHLINER** è un generatore di parole/frasi con database personalizzabile, progettato per i cypher freestyle. Disponibile su browser desktop e mobile, con un'interfaccia ottimizzata per entrambi.
+Generatore di parole e frasi per cypher freestyle. Estrai elementi casuali da un database personalizzabile, filtra per categoria e gestisci il tuo archivio direttamente nel browser.
 
 ---
 
-## 📱 Interfaccia Mobile
+## Generazione
 
-Su mobile il tool occupa l'intero schermo senza mai richiedere scroll:
+Seleziona quante voci vuoi estrarre (1–10) e premi **GENERA**. Le voci vengono visualizzate a schermo alternando due colori per distinguerle facilmente.
 
-- **Topbar** — mostra il titolo e il selettore del tema grafico
-- **Area di generazione** — occupa tutto lo spazio disponibile tra topbar e bottombar; il testo generato si adatta automaticamente in dimensione per riempire lo spazio
-- **Bottombar** — contiene il selettore quantità (−/+), il tasto **GENERA** e il tasto ☰ per aprire il drawer
-- **Drawer** — pannello che sale dal basso con i filtri categoria, shuffle, e tutti i controlli del database
+Il tasto **SPAZIO** genera nuovi risultati senza usare il mouse.
 
-## 🖥 Interfaccia Desktop
-
-Su desktop il layout è a colonne: la colonna principale contiene l'area di generazione e i controlli, la colonna laterale contiene i filtri e i pulsanti database.
+### Logica a mazzo chiuso
+Una voce non viene ripetuta finché tutte le altre del pool attivo non sono state estratte almeno una volta. **SHUFFLE** resetta e rimescola il mazzo in qualsiasi momento. Anche modificare i filtri resetta il mazzo automaticamente.
 
 ---
 
-## 🎨 Temi Grafici
+## Filtri Categoria
 
-Il tool include 4 temi selezionabili dal dropdown "TEMA:" nella topbar (mobile) o nell'header (desktop). Il tema scelto viene salvato e ripristinato automaticamente alle visite successive.
-
-| Tema | Descrizione |
-|---|---|
-| **Switch** | Teal e rosso su sfondo antracite — default |
-| **Cyberpunk** | Cyan e magenta su sfondo nero |
-| **Retrowave** | Rosso e arancione su sfondo viola scuro |
-| **Marvin** | Teal su sfondo bianco — alta leggibilità in ambienti luminosi |
+Ogni voce del database appartiene a uno o più tag. Attivando un tag, la generazione si limita alle voci che lo contengono. Più tag attivi contemporaneamente producono un'estrazione combinata.
 
 ---
 
-## ⚙️ Generazione
+## Database Editor
 
-- **Selettore Quantità** — estrai da 1 a 10 elementi contemporaneamente tramite i tasti −/+
-- **GENERA** — estrae casualmente elementi dal database rispettando i filtri attivi; il testo generato alterna due colori del tema per distinguere facilmente le voci
-- **Tasto SPAZIO** *(solo desktop)* — genera nuovi risultati senza usare il mouse
+Pannello per gestire le voci salvate nel browser.
 
-### Shuffle Logic (mazzo chiuso)
-Il sistema garantisce varietà con una logica a "mazzo chiuso":
-- Una voce non viene ripetuta finché tutte le altre del pool selezionato non sono state estratte almeno una volta
-- **SHUFFLE** resetta e rimescola il mazzo attuale
-- Qualsiasi modifica ai filtri resetta automaticamente il mazzo
+**Inserimento massivo** — incolla più voci nell'area di testo (una per riga) e assegna loro i tag. Le voci già presenti non vengono duplicate: se una voce esiste già, vengono aggiunti solo i tag nuovi.
+
+**Tabella archivio** — cerca per testo o filtra per tag. Modifica le voci direttamente in riga, aggiungi o rimuovi tag, elimina singole voci. Il database è paginato per gestire archivi estesi.
 
 ---
 
-## 🏷 Filtri Categoria
+## Backup
 
-I tag sono selezionabili dal pannello filtri (colonna laterale su desktop, drawer su mobile):
-
-- Quando un tag è attivo, la generazione è limitata alle voci che lo contengono
-- È possibile attivare più tag contemporaneamente per estrazioni combinate
-- Il contatore accanto a ogni tag mostra quante voci appartengono a quella categoria
+- **Export** — scarica l'intero database come file `.json`
+- **Import** — carica un file `.json` precedentemente esportato; le voci vengono unite a quelle esistenti, i duplicati ignorati e i tag unificati
+- **Carica DB Default** — ripristina il database predefinito con 800+ voci suddivise per categoria
 
 ---
 
-## 🛠 Database Editor
+## Temi
 
-Il pannello editor permette il controllo totale sui dati salvati nel `localStorage` del browser.
-
-### Inserimento Massivo
-- Inserisci decine di voci contemporaneamente nell'area di testo, una per riga
-- Seleziona i tag da assegnare tramite i pulsanti rapidi, oppure inseriscili manualmente separati da virgola
-- Le voci già presenti non vengono duplicate: se una voce esiste già, vengono aggiunti solo i tag nuovi
-
-### Gestione Archivio
-- **Ricerca testuale** e **filtri per tag** per trovare voci specifiche in database estesi
-- **Editing inline** — clicca su una voce per modificarla direttamente
-- **Rimuovi tag** cliccando sulla `×` accanto ad essi
-- **Aggiungi tag** esistenti tramite il menu a tendina `+` direttamente in riga
-- **Elimina** per la rimozione definitiva di singole voci
-- Navigazione paginata per database grandi
-
----
-
-## 💾 Backup e Importazione
-
-- **Export** — esporta l'intero database in formato `.json`
-- **Import** — carica un file `.json` precedentemente esportato; le voci vengono aggiunte a quelle esistenti, i duplicati vengono ignorati e i tag vengono unificati
-- **Carica DB Default** — carica il database predefinito con 800+ voci. Richiede un server HTTP (funziona automaticamente su GitHub Pages; in locale usa Live Server o `python -m http.server`)
-
----
-
-## 🌐 Deploy
-
-Il tool è un singolo file `index.html` — basta caricarlo su qualsiasi hosting statico. Il database predefinito (`db-argomenti-v1.json`) deve trovarsi nella stessa cartella.
-
-I dati del database personalizzato vengono salvati nel `localStorage` del browser: sono locali alla macchina e al browser utilizzato. Per trasferire il database tra dispositivi usa la funzione Export/Import.
+Quattro temi grafici selezionabili: **Switch**, **Cyberpunk**, **Retrowave**, **Marvin**. La scelta viene salvata automaticamente.
