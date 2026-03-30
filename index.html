@@ -1,6 +1,10 @@
 <!DOCTYPE html>
-<html lang="it" data-palette="switch">
+<html lang="it" data-palette="elettrico">
 <head>
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pack-a-Punchliner</title>
@@ -45,6 +49,14 @@
         <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-8 space-y-6">
                 <div id="displayAreaSlot"></div>
+                <!-- BARRA TIMER desktop (solo >= 1024px) -->
+                <div id="autoTimerBarWrapper" style="display:none;" class="flex items-center gap-3 px-1">
+                    <div style="flex:1;height:3px;background:rgba(var(--neon-cyan-rgb),0.12);border-radius:2px;overflow:hidden;">
+                        <div id="autoTimerBar" style="height:100%;width:100%;background:var(--neon-cyan);border-radius:2px;box-shadow:0 0 6px rgba(var(--neon-cyan-rgb),0.5);"></div>
+                    </div>
+                    <span id="autoTimerCount" style="font-family:'Rajdhani',sans-serif;font-size:0.7rem;font-weight:800;color:var(--neon-cyan);opacity:0.7;min-width:18px;text-align:right;"></span>
+                </div>
+
                 <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
                     <div class="flex flex-row items-center justify-center gap-4 w-full sm:w-auto">
                         <div class="flex items-center gap-1 px-4 py-2 rounded-full h-[58px]" style="background:var(--bg-dark);border:1px solid rgba(var(--neon-cyan-rgb),0.2);">
@@ -65,6 +77,22 @@
                     <div id="tagFilters" class="flex flex-wrap gap-2"></div>
                 </div>
                 <div class="space-y-4">
+                    <!-- PANNELLO TIMER (desktop) -->
+                    <div class="rounded-2xl p-4" style="background:var(--bg-dark);border:1px solid rgba(var(--neon-cyan-rgb),0.15);">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-[10px] theme-label font-bold uppercase tracking-widest">&#9654; Auto Timer</h3>
+                            <button id="timerToggleBtnDesktop" onclick="_autoTimer.toggle()" class="cyber-button px-4 py-1 text-[10px]">AVVIA</button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] theme-muted uppercase font-bold" style="white-space:nowrap;">Ogni</span>
+                            <input type="number" id="timerDurationDesktop" value="5" min="1" max="300"
+                                class="cyber-input rounded-lg text-center font-bold text-sm"
+                                style="width:54px;padding:4px 6px;"
+                                onchange="document.getElementById('timerDuration') && (document.getElementById('timerDuration').value=this.value); localStorage.setItem('timerDuration',this.value); if(_autoTimer.active){_autoTimer.stop();_autoTimer.start();}">
+                            <span class="text-[10px] theme-muted uppercase font-bold">secondi</span>
+                        </div>
+                    </div>
+
                     <button onclick="openEditor()" class="cyber-button w-full py-4 text-sm">Apri Database</button>
                     <div class="grid grid-cols-2 gap-4">
                         <button onclick="exportData()" class="cyber-button py-2 text-[10px]">Export</button>
@@ -79,6 +107,8 @@
                 </div>
             </div>
         </main>
+    </div>
+        </div>
     </div>
 
     <!-- MOBILE BOTTOMBAR -->
@@ -109,6 +139,23 @@
             </div>
             <div id="tagFiltersMobile" class="flex flex-wrap gap-2"></div>
         </div>
+        <div style="height:1px;background:rgba(var(--neon-cyan-rgb),0.1);margin:10px 0;"></div>
+
+        <!-- PANNELLO TIMER (mobile) -->
+        <div class="timer-panel mb-2">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-[10px] theme-label font-bold uppercase tracking-widest">&#9654; Auto Timer</span>
+                <button id="timerToggleBtn" onclick="_autoTimer.toggle()" class="cyber-button px-4 py-1 text-[10px]">AVVIA</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] theme-muted uppercase font-bold" style="white-space:nowrap;">Ogni</span>
+                <input type="number" id="timerDuration" value="5" min="1" max="300"
+                    class="cyber-input rounded-lg text-center font-bold text-sm"
+                    style="width:54px;padding:4px 6px;">
+                <span class="text-[10px] theme-muted uppercase font-bold">secondi</span>
+            </div>
+        </div>
+
         <div style="height:1px;background:rgba(var(--neon-cyan-rgb),0.1);margin:10px 0;"></div>
         <div class="flex flex-col gap-2">
             <button onclick="openEditor();closeDrawer();" class="cyber-button w-full py-3 text-sm">Apri Database</button>
@@ -229,6 +276,15 @@
             </div>
         </div>
     </div>
+
+    <!-- BARRA TIMER MOBILE: fixed, sopra la bottombar, visibile solo su mobile quando timer attivo -->
+    <div id="mobileTimerBarWrapper" style="display:none;position:fixed;bottom:68px;left:0;right:0;z-index:47;align-items:center;gap:8px;padding:3px 14px;">
+        <div style="flex:1;height:3px;background:rgba(var(--neon-cyan-rgb),0.15);border-radius:2px;overflow:hidden;">
+            <div id="autoTimerBarMobile" style="height:100%;width:100%;background:var(--neon-cyan);box-shadow:0 0 8px rgba(var(--neon-cyan-rgb),0.6);"></div>
+        </div>
+        <span id="autoTimerCountMobile" style="font-family:'Rajdhani',sans-serif;font-size:0.7rem;font-weight:800;color:var(--neon-cyan);min-width:20px;text-align:right;flex-shrink:0;"></span>
+    </div>
+
     <script src="js/app.js"></script>
 </body>
 </html>

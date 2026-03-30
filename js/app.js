@@ -273,6 +273,63 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
     renderTags();
 }
 
+// ── PALETTE SHADOWS (unica fonte di verità) ──────────────────────────────────
+function getPaletteShadows(palette) {
+    const altColor = getComputedStyle(document.documentElement).getPropertyValue('--alt-color').trim();
+    switch (palette) {
+        case 'cyberpunk':
+            return {
+                cyan: '0 0 8px var(--neon-cyan), 2px 2px 0 #003333, 3px 4px 0 rgba(0,0,0,0.5)',
+                alt:  '0 0 6px rgba(255,255,255,0.5), 2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)',
+            };
+        case 'retrowave':
+            return {
+                cyan: '0 0 8px var(--neon-cyan), 2px 2px 0 #4a0018, 3px 4px 0 rgba(0,0,0,0.5)',
+                alt:  '0 0 8px ' + altColor + ', 2px 2px 0 #4a2000, 3px 4px 0 rgba(0,0,0,0.5)',
+            };
+        case 'cioccolato':
+            return {
+                cyan: '0 0 8px rgba(255,248,240,0.6), 2px 2px 0 #2a1410, 3px 4px 0 rgba(0,0,0,0.5)',
+                alt:  '0 0 8px rgba(192,133,82,0.6), 2px 2px 0 #2a1410, 3px 4px 0 rgba(0,0,0,0.5)',
+            };
+        case 'halloween':
+            return {
+                cyan: '0 0 8px #FA8112, 2px 2px 0 #5a2500, 3px 4px 0 rgba(0,0,0,0.5)',
+                alt:  '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)',
+            };
+        case 'pastello':
+            return {
+                cyan: '0 0 10px rgba(221,174,211,0.7), 2px 3px 6px rgba(0,0,0,0.7)',
+                alt:  '2px 3px 6px rgba(0,0,0,0.7)',
+            };
+        case 'giungla':
+            return {
+                cyan: '0 0 8px #9DC08B, 2px 2px 0 #1a2918, 3px 4px 0 rgba(0,0,0,0.5)',
+                alt:  '2px 2px 0 #1a2918, 3px 4px 0 rgba(0,0,0,0.4)',
+            };
+        case 'elettrico':
+            return {
+                cyan: '0 0 8px #F4CE14, 2px 2px 0 #5a4a00, 3px 4px 0 rgba(0,0,0,0.5)',
+                alt:  '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)',
+            };
+        case 'caramella':
+            return {
+                cyan: '0 0 8px #FF3F7F, 2px 2px 0 #1a0035, 3px 4px 0 rgba(0,0,0,0.5)',
+                alt:  '0 0 8px #FFC400, 2px 2px 0 #1a0035, 3px 4px 0 rgba(0,0,0,0.5)',
+            };
+        case 'ferrari':
+            return {
+                cyan: '0 0 8px #DA0037, 2px 2px 0 #3a0010, 3px 4px 0 rgba(0,0,0,0.5)',
+                alt:  '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)',
+            };
+        default: // switch e altri
+            return {
+                cyan: '0 0 12px var(--neon-cyan), 2px 3px 6px rgba(0,0,0,0.9)',
+                alt:  '0 0 12px ' + altColor + ', 2px 3px 6px rgba(0,0,0,0.9)',
+            };
+    }
+}
+
 function generate() {
     const display = document.getElementById('displayArea');
     const _wc = document.getElementById('wordCount') || document.getElementById('wordCountDesktop');
@@ -287,12 +344,9 @@ function generate() {
 
     let results = [];
     for(let i=0; i<count; i++) {
-        // Se il mazzo è vuoto O se sono stati cambiati i filtri, ricrealo
         if(currentDeck.length === 0) {
             currentDeck = [...filtered].sort(() => Math.random() - 0.5);
         }
-
-        // Estrai l'elemento. Se per errore è undefined (mazzo finito), rigenera
         let picked = currentDeck.pop();
         if(!picked) {
             currentDeck = [...filtered].sort(() => Math.random() - 0.5);
@@ -301,50 +355,20 @@ function generate() {
         results.push(picked.text);
     }
 
+    const palette = document.documentElement.getAttribute('data-palette') || 'cyberpunk';
+    const shadows = getPaletteShadows(palette);
+
     display.innerHTML = results.map((res, i) => {
         const isCyan = i % 2 === 0;
-        const color = isCyan ? 'var(--neon-cyan)' : 'var(--alt-color)';
-        const altColor = getComputedStyle(document.documentElement).getPropertyValue('--alt-color').trim();
-        const palette = document.documentElement.getAttribute('data-palette') || 'cyberpunk';
-        let cyanShadow, altShadow;
-        if (palette === 'cyberpunk') {
-            // D: ombra blocco solida + glow neon
-            cyanShadow = '0 0 8px var(--neon-cyan), 2px 2px 0 #003333, 3px 4px 0 rgba(0,0,0,0.5)';
-            altShadow  = '0 0 6px rgba(255,255,255,0.5), 2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)';
-        } else if (palette === 'retrowave') {
-            // D: ombra blocco solida colorata
-            cyanShadow = '0 0 8px var(--neon-cyan), 2px 2px 0 #4a0018, 3px 4px 0 rgba(0,0,0,0.5)';
-            altShadow  = '0 0 8px ' + altColor + ', 2px 2px 0 #4a2000, 3px 4px 0 rgba(0,0,0,0.5)';
-        } else if (palette === 'cioccolato') {
-            cyanShadow = '0 0 8px rgba(255,248,240,0.6), 2px 2px 0 #2a1410, 3px 4px 0 rgba(0,0,0,0.5)';
-            altShadow  = '0 0 8px rgba(192,133,82,0.6), 2px 2px 0 #2a1410, 3px 4px 0 rgba(0,0,0,0.5)';
-        } else if (palette === 'halloween') {
-            cyanShadow = '0 0 8px #FA8112, 2px 2px 0 #5a2500, 3px 4px 0 rgba(0,0,0,0.5)';
-            altShadow  = '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)';
-        } else if (palette === 'pastello') {
-            cyanShadow = '0 0 10px rgba(221,174,211,0.7), 2px 3px 6px rgba(0,0,0,0.7)';
-            altShadow  = '2px 3px 6px rgba(0,0,0,0.7)';
-        } else if (palette === 'giungla') {
-            cyanShadow = '0 0 8px #9DC08B, 2px 2px 0 #1a2918, 3px 4px 0 rgba(0,0,0,0.5)';
-            altShadow  = '2px 2px 0 #1a2918, 3px 4px 0 rgba(0,0,0,0.4)';
-        } else if (palette === 'elettrico') {
-            cyanShadow = '0 0 8px #F4CE14, 2px 2px 0 #5a4a00, 3px 4px 0 rgba(0,0,0,0.5)';
-            altShadow  = '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)';
-        } else if (palette === 'caramella') {
-            cyanShadow = '0 0 8px #FF3F7F, 2px 2px 0 #1a0035, 3px 4px 0 rgba(0,0,0,0.5)';
-            altShadow  = '0 0 8px #FFC400, 2px 2px 0 #1a0035, 3px 4px 0 rgba(0,0,0,0.5)';
-        } else if (palette === 'ferrari') {
-            cyanShadow = '0 0 8px #DA0037, 2px 2px 0 #3a0010, 3px 4px 0 rgba(0,0,0,0.5)';
-            altShadow  = '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)';
-        } else {
-            // switch e altri: drop shadow originale
-            cyanShadow = '0 0 12px var(--neon-cyan), 2px 3px 6px rgba(0,0,0,0.9)';
-            altShadow  = '0 0 12px ' + altColor + ', 2px 3px 6px rgba(0,0,0,0.9)';
-        }
-        const shadow = isCyan ? cyanShadow : altShadow;
+        const color  = isCyan ? 'var(--neon-cyan)' : 'var(--alt-color)';
+        const shadow = isCyan ? shadows.cyan : shadows.alt;
         return `<div class="animate-fade font-extrabold text-center" style="color:${color}; text-shadow:${shadow}; overflow-wrap:normal; word-break:keep-all; hyphens:none; line-height:0.94;">${res}</div>`;
     }).join('');
+
     fitTextToContainer();
+
+    // Se il timer è attivo, resettalo ad ogni generazione manuale
+    if (_autoTimer.active) _autoTimer.reset();
 }
 
 function fitTextToContainer() {
@@ -446,6 +470,74 @@ function fitTextToContainer() {
             document.getElementById('drawer').classList.remove('open');
             document.getElementById('drawerOverlay').classList.remove('open');
         }
+
+        // ── DRAWER DRAG TO DISMISS ────────────────────────────────────────────────────
+        (function initDrawerDrag() {
+            const drawer  = document.getElementById('drawer');
+            const overlay = document.getElementById('drawerOverlay');
+            if (!drawer) return;
+
+            let startY     = 0;
+            let currentY   = 0;
+            let dragging   = false;
+            let drawerH    = 0;
+
+            function onTouchStart(e) {
+                // Drag solo dalla handle o dall'area in alto del drawer
+                drawerH  = drawer.offsetHeight;
+                startY   = e.touches[0].clientY;
+                currentY = startY;
+                dragging = true;
+                // Disabilita la transition durante il drag per seguire il dito in tempo reale
+                drawer.style.transition = 'none';
+            }
+
+            function onTouchMove(e) {
+                if (!dragging) return;
+                currentY = e.touches[0].clientY;
+                const deltaY = currentY - startY;
+                // Permetti solo drag verso il basso (deltaY > 0)
+                if (deltaY <= 0) {
+                    drawer.style.transform = 'translateY(0)';
+                    return;
+                }
+                // Resistenza leggera oltre il 60% dell'altezza
+                const maxDrag = drawerH;
+                const clamped = Math.min(deltaY, maxDrag);
+                drawer.style.transform = `translateY(${clamped}px)`;
+
+                // Sfuma l'overlay proporzionalmente
+                const progress = clamped / drawerH;
+                overlay.style.opacity = 1 - progress * 0.85;
+
+                // Previeni lo scroll della pagina durante il drag
+                e.preventDefault();
+            }
+
+            function onTouchEnd() {
+                if (!dragging) return;
+                dragging = false;
+                // Riabilita la transition
+                drawer.style.transition = '';
+                overlay.style.opacity   = '';
+
+                const deltaY    = currentY - startY;
+                const threshold = drawerH * 0.35; // chiudi se trascinato oltre il 35%
+
+                if (deltaY > threshold) {
+                    closeDrawer();
+                    drawer.style.transform = ''; // lascia che il CSS gestisca
+                } else {
+                    // Rimbalza su
+                    drawer.style.transform = '';
+                }
+            }
+
+            drawer.addEventListener('touchstart', onTouchStart, { passive: true });
+            drawer.addEventListener('touchmove',  onTouchMove,  { passive: false });
+            drawer.addEventListener('touchend',   onTouchEnd,   { passive: true });
+        })();
+
 
         function toggleAddSection() {
             const sec = document.getElementById('addSection');
@@ -704,13 +796,13 @@ function fitTextToContainer() {
 
         // ── PALETTE SWITCHER ──
         const PALETTES = [
+            { id: 'elettrico',  label: 'Elettrico'  },
             { id: 'switch',     label: 'Switch'     },
             { id: 'cioccolato', label: 'Cioccolato' },
             { id: 'halloween',  label: 'Halloween'  },
-            { id: 'retrowave',  label: 'Retrowave'  },
-            { id: 'elettrico',  label: 'Elettrico'  },
             { id: 'ferrari',    label: 'Ferrari'    },
             { id: 'cyberpunk',  label: 'Cyberpunk'  },
+            { id: 'retrowave',  label: 'Retrowave'  },
             { id: 'pastello',   label: 'Pastello'   },
             { id: 'giungla',    label: 'Giungla'    },
             { id: 'caramella',  label: 'Caramella'  },
@@ -756,49 +848,177 @@ function fitTextToContainer() {
             // Ricalcola le shadow degli elementi già generati con i colori del nuovo tema
             const items = document.querySelectorAll('#displayArea div.animate-fade');
             if (items.length) {
-                const altColor = getComputedStyle(document.documentElement).getPropertyValue('--alt-color').trim();
+                const shadows = getPaletteShadows(name);
                 items.forEach((el, i) => {
                     const isCyan = i % 2 === 0;
-                    let cyanShadow, altShadow;
-                    if (name === 'cyberpunk') {
-                        cyanShadow = '0 0 8px var(--neon-cyan), 2px 2px 0 #003333, 3px 4px 0 rgba(0,0,0,0.5)';
-                        altShadow  = '0 0 6px rgba(255,255,255,0.5), 2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)';
-                    } else if (name === 'retrowave') {
-                        cyanShadow = '0 0 8px var(--neon-cyan), 2px 2px 0 #4a0018, 3px 4px 0 rgba(0,0,0,0.5)';
-                        altShadow  = '0 0 8px ' + altColor + ', 2px 2px 0 #4a2000, 3px 4px 0 rgba(0,0,0,0.5)';
-                    } else if (name === 'cioccolato') {
-                        cyanShadow = '0 0 8px rgba(255,248,240,0.6), 2px 2px 0 #2a1410, 3px 4px 0 rgba(0,0,0,0.5)';
-                        altShadow  = '0 0 8px rgba(192,133,82,0.6), 2px 2px 0 #2a1410, 3px 4px 0 rgba(0,0,0,0.5)';
-                    } else if (name === 'halloween') {
-                        cyanShadow = '0 0 8px #FA8112, 2px 2px 0 #5a2500, 3px 4px 0 rgba(0,0,0,0.5)';
-                        altShadow  = '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)';
-                    } else if (name === 'pastello') {
-                        cyanShadow = '0 0 10px rgba(221,174,211,0.7), 2px 3px 6px rgba(0,0,0,0.7)';
-                        altShadow  = '2px 3px 6px rgba(0,0,0,0.7)';
-                    } else if (name === 'giungla') {
-                        cyanShadow = '0 0 8px #9DC08B, 2px 2px 0 #1a2918, 3px 4px 0 rgba(0,0,0,0.5)';
-                        altShadow  = '2px 2px 0 #1a2918, 3px 4px 0 rgba(0,0,0,0.4)';
-                    } else if (name === 'elettrico') {
-                        cyanShadow = '0 0 8px #F4CE14, 2px 2px 0 #5a4a00, 3px 4px 0 rgba(0,0,0,0.5)';
-                        altShadow  = '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)';
-                    } else if (name === 'caramella') {
-                        cyanShadow = '0 0 8px #FF3F7F, 2px 2px 0 #1a0035, 3px 4px 0 rgba(0,0,0,0.5)';
-                        altShadow  = '0 0 8px #FFC400, 2px 2px 0 #1a0035, 3px 4px 0 rgba(0,0,0,0.5)';
-                    } else if (name === 'ferrari') {
-                        cyanShadow = '0 0 8px #DA0037, 2px 2px 0 #3a0010, 3px 4px 0 rgba(0,0,0,0.5)';
-                        altShadow  = '2px 2px 0 #111, 3px 4px 0 rgba(0,0,0,0.4)';
-                    } else {
-                        cyanShadow = '0 0 12px var(--neon-cyan), 2px 3px 6px rgba(0,0,0,0.9)';
-                        altShadow  = '0 0 12px ' + altColor + ', 2px 3px 6px rgba(0,0,0,0.9)';
-                    }
-                    el.style.color = isCyan ? 'var(--neon-cyan)' : 'var(--alt-color)';
-                    el.style.textShadow = isCyan ? cyanShadow : altShadow;
+                    el.style.color      = isCyan ? 'var(--neon-cyan)' : 'var(--alt-color)';
+                    el.style.textShadow = isCyan ? shadows.cyan : shadows.alt;
                 });
             }
         }
 
         buildPaletteSelectors();
-        const savedPalette = localStorage.getItem('palette') || 'switch';
+        const savedPalette = localStorage.getItem('palette') || 'elettrico';
         applyPalette(savedPalette);
 
         if (_firstLoad) loadDefaultDB(); else init();
+
+        // ── AUTO TIMER ──────────────────────────────────────────────────────────────
+        const _autoTimer = (() => {
+            let intervalId  = null;
+            let rafId       = null;
+            let startTime   = null;
+            let duration    = 5000;
+            let active      = false;
+
+            const getBar      = () => document.getElementById('autoTimerBar');
+            const getCount    = () => document.getElementById('autoTimerCount');
+
+            function _tick() {
+                if (!active) return;
+                const elapsed   = Date.now() - startTime;
+                const remaining = Math.max(0, duration - elapsed);
+                const pct       = (remaining / duration) * 100;
+                const secs      = Math.ceil(remaining / 1000);
+                // Desktop bar
+                const bar   = document.getElementById('autoTimerBar');
+                const count = document.getElementById('autoTimerCount');
+                if (bar)   bar.style.width = pct + '%';
+                if (count) count.textContent = secs;
+                // Mobile bar
+                const barM   = document.getElementById('autoTimerBarMobile');
+                const countM = document.getElementById('autoTimerCountMobile');
+                if (barM)   barM.style.width = pct + '%';
+                if (countM) countM.textContent = secs;
+                rafId = requestAnimationFrame(_tick);
+            }
+
+            function _scheduleNext() {
+                intervalId = setTimeout(() => {
+                    if (!active) return;
+                    _generateInternal();
+                    _restart();
+                }, duration);
+            }
+
+            function _generateInternal() {
+                const display = document.getElementById('displayArea');
+                const _wc = document.getElementById('wordCount') || document.getElementById('wordCountDesktop');
+                const count = parseInt(_wc.value);
+                let filtered = activeTags.size > 0
+                    ? words.filter(w => w.tags.some(t => activeTags.has(t.toLowerCase())))
+                    : words;
+                if (filtered.length === 0) return;
+                let results = [];
+                for (let i = 0; i < count; i++) {
+                    if (currentDeck.length === 0) currentDeck = [...filtered].sort(() => Math.random() - 0.5);
+                    let picked = currentDeck.pop();
+                    if (!picked) { currentDeck = [...filtered].sort(() => Math.random() - 0.5); picked = currentDeck.pop(); }
+                    results.push(picked.text);
+                }
+                const palette = document.documentElement.getAttribute('data-palette') || 'cyberpunk';
+                const shadows = getPaletteShadows(palette);
+                display.innerHTML = results.map((res, i) => {
+                    const isCyan = i % 2 === 0;
+                    return `<div class="animate-fade font-extrabold text-center" style="color:${isCyan ? 'var(--neon-cyan)' : 'var(--alt-color)'}; text-shadow:${isCyan ? shadows.cyan : shadows.alt}; overflow-wrap:normal; word-break:keep-all; hyphens:none; line-height:0.94;">${res}</div>`;
+                }).join('');
+                fitTextToContainer();
+            }
+
+            function _resetBarsInstant() {
+                ['autoTimerBar', 'autoTimerBarMobile'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    el.style.transition = 'none';
+                    el.style.width = '100%';
+                });
+            }
+
+            function _restart() {
+                clearTimeout(intervalId);
+                cancelAnimationFrame(rafId);
+                // Prima resetta le barre a 100% senza transition...
+                _resetBarsInstant();
+                // ...poi nel frame successivo riabilita la transition e fa partire il tick
+                requestAnimationFrame(() => {
+                    ['autoTimerBar', 'autoTimerBarMobile'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.style.transition = 'width 0.15s linear';
+                    });
+                    startTime = Date.now();
+                    rafId = requestAnimationFrame(_tick);
+                    _scheduleNext();
+                });
+            }
+
+            function start() {
+                if (active) return;
+                // Legge dal primo input disponibile (mobile o desktop)
+                const inp = document.getElementById('timerDuration') || document.getElementById('timerDurationDesktop');
+                if (inp) {
+                    duration = Math.max(1, parseInt(inp.value) || 5) * 1000;
+                    // Sincronizza entrambi
+                    ['timerDuration','timerDurationDesktop'].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.value = Math.round(duration / 1000);
+                    });
+                }
+                active = true;
+                _showBar(true);
+                _updateToggleBtn(true);
+                _restart();
+            }
+
+            function stop() {
+                active = false;
+                clearTimeout(intervalId);
+                cancelAnimationFrame(rafId);
+                _resetBarsInstant();
+                _showBar(false);
+                _updateToggleBtn(false);
+            }
+
+            function reset() {
+                if (!active) return;
+                _restart();
+            }
+
+            function toggle() {
+                if (active) stop(); else start();
+            }
+
+            function _showBar(show) {
+                const isMobile = window.innerWidth < 1024;
+                // Desktop bar: solo su desktop
+                const w1 = document.getElementById('autoTimerBarWrapper');
+                if (w1) w1.style.display = (!isMobile && show) ? 'flex' : 'none';
+                // Mobile bar: solo su mobile
+                const w2 = document.getElementById('mobileTimerBarWrapper');
+                if (w2) w2.style.display = (isMobile && show) ? 'flex' : 'none';
+            }
+
+            function _updateToggleBtn(on) {
+                ['timerToggleBtn', 'timerToggleBtnDesktop'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (!btn) return;
+                    btn.textContent = on ? 'STOP' : 'AVVIA';
+                    if (on) { btn.classList.add('button-primary'); }
+                    else    { btn.classList.remove('button-primary'); }
+                });
+            }
+
+            return { start, stop, reset, toggle, get active() { return active; } };
+        })();
+
+        // Ricarica durata dal localStorage
+        (function initTimerUI() {
+            const saved = localStorage.getItem('timerDuration');
+            const inp   = document.getElementById('timerDuration');
+            if (inp && saved) inp.value = saved;
+            if (inp) {
+                inp.addEventListener('change', () => {
+                    localStorage.setItem('timerDuration', inp.value);
+                    if (_autoTimer.active) { _autoTimer.stop(); _autoTimer.start(); }
+                });
+            }
+        })();
