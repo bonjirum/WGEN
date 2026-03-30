@@ -7,7 +7,8 @@ Consente di estrarre elementi casuali da un database personalizzabile, filtrare 
 
 ## Generazione
 
-<img width="422" height="65" alt="image" src="https://github.com/user-attachments/assets/211faa75-3a02-4860-aa3b-33bdfcbf148b" />
+<img width="426" height="61" alt="image" src="https://github.com/user-attachments/assets/07ea6d71-3907-4c02-a31d-50e57bef79e3" />
+
 
 Seleziona il numero di voci da estrarre (da 1 a 10) e premi **GENERA**.  
 Le voci vengono visualizzate a schermo con colori alternati per migliorarne la leggibilità.
@@ -31,7 +32,8 @@ Questo approccio evita ripetizioni premature e assicura una distribuzione unifor
 
 ## Filtri Categoria
 
-<img width="423" height="414" alt="image" src="https://github.com/user-attachments/assets/e91498ac-102c-4dce-a5cb-7a8d9fd0e7cd" />
+<img width="410" height="124" alt="image" src="https://github.com/user-attachments/assets/beb9b2ff-9b20-4247-b4e1-fab01c55ee76" />
+
 
 Ogni voce del database è associata a uno o più tag.
 
@@ -44,7 +46,8 @@ I filtri influenzano direttamente il mazzo di estrazione.
 
 ## Database Editor
 
-![databaseeditor](https://github.com/user-attachments/assets/8831ace4-c62f-4ba4-8f6a-fe4be1f8fb0f)
+<img width="421" height="455" alt="image" src="https://github.com/user-attachments/assets/3b8f92f7-f29a-4f59-a868-5ff36b2dbe8f" />
+
 
 Pannello dedicato alla gestione completa del database locale.
 
@@ -67,7 +70,7 @@ Il database è organizzato in pagine per mantenere alte le prestazioni anche con
 
 ## Backup
 
-<img width="425" height="418" alt="image" src="https://github.com/user-attachments/assets/6d931db7-af3e-42c2-998e-6d49942cda95" />
+<img width="419" height="176" alt="image" src="https://github.com/user-attachments/assets/01d547bf-8306-4a69-b4c3-c43dcc1d6ab7" />
 
 - **Export**  
   Esporta l’intero database in formato `.json`
@@ -83,7 +86,8 @@ Il database è organizzato in pagine per mantenere alte le prestazioni anche con
 
 ## Temi
 
-<img width="421" height="172" alt="image" src="https://github.com/user-attachments/assets/d36b40a3-9afa-44a2-90a2-22ef9e7c7e20" />
+<img width="419" height="330" alt="image" src="https://github.com/user-attachments/assets/d0eafda3-fd5e-44c1-bf20-31f0bb003123" />
+
 
 Sono disponibili diversi temi grafici selezionabili.
 La preferenza viene salvata automaticamente e applicata ai successivi accessi.
