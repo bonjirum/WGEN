@@ -195,7 +195,10 @@
 
             <div id="tableContainer" class="rounded-2xl p-6" style="background:var(--bg-dark);border:1px solid rgba(var(--neon-cyan-rgb),0.15);">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-                    <input type="text" id="tableSearch" oninput="handleTableSearch()" placeholder="Cerca..." class="cyber-input w-full sm:w-80 rounded-lg px-4 py-2 text-xs">
+                    <div style="position:relative;width:100%;max-width:320px;">
+                    <input type="text" id="tableSearch" oninput="handleTableSearch()" placeholder="Cerca..." class="cyber-input w-full rounded-lg px-4 py-2 text-xs" style="padding-right:28px;">
+                    <button id="clearSearchBtn" onclick="clearSearch()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:0.9rem;font-weight:700;color:var(--neon-cyan);opacity:0.5;line-height:1;padding:0;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">×</button>
+                </div>
                     <div id="archiveTagFilters" class="flex flex-wrap gap-2"></div>
                 </div>
                 <div class="overflow-x-auto">

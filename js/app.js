@@ -1,5 +1,6 @@
 let words = JSON.parse(localStorage.getItem('myWords')) || [];
         let _firstLoad = words.length === 0;
+        let _calcDebounce = null;
         let activeTags = new Set();
         let archiveSearchTags = new Set();
         let currentPage = 1;
@@ -77,12 +78,27 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
             updateQuickSelect();
         }
 
-        function handleTableSearch() { searchQuery = document.getElementById('tableSearch').value.toLowerCase(); currentPage = 1; renderTable(); }
+        function handleTableSearch() {
+            const input = document.getElementById('tableSearch');
+            searchQuery = input.value.toLowerCase();
+            const btn = document.getElementById('clearSearchBtn');
+            if (btn) btn.style.display = input.value ? 'block' : 'none';
+            currentPage = 1;
+            renderTable();
+        }
+        function clearSearch() {
+            const input = document.getElementById('tableSearch');
+            if (input) input.value = '';
+            const btn = document.getElementById('clearSearchBtn');
+            if (btn) btn.style.display = 'none';
+            searchQuery = '';
+            currentPage = 1;
+            renderTable();
+        }
 
         function renderArchiveSearchTags() {
             const container = document.getElementById('archiveTagFilters');
 
-            // 1. Contiamo quante volte appare ogni tag nel database
             const tagCounts = {};
             words.forEach(w => {
                 w.tags.forEach(t => {
@@ -91,20 +107,62 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
                 });
             });
 
-            // 2. Otteniamo la lista unica dei tag
             const allTags = Object.keys(tagCounts).sort();
 
-            // 3. Generiamo l'HTML includendo il conteggio tra parentesi
             container.innerHTML = allTags.map(tag => {
                 const active = archiveSearchTags.has(tag);
                 const count = tagCounts[tag];
                 return `
-                    <button onclick="toggleArchiveTag('${tag}')"
-                        class="px-4 py-2 rounded-lg text-[11px] font-bold border uppercase transition-all
-                        ${active ? 'theme-tag-active' : 'theme-tag-inactive'}">
-                        ${tag} (${count})
-                    </button>`;
+                    <div style="display:inline-flex;align-items:center;gap:0;" id="tagpill-${CSS.escape(tag)}">
+                        <button onclick="toggleArchiveTag('${tag}')"
+                            class="px-4 py-2 rounded-l-lg text-[11px] font-bold border-y border-l uppercase transition-all
+                            ${active ? 'theme-tag-active' : 'theme-tag-inactive'}" style="border-right:none;">
+                            ${tag} (${count})
+                        </button>
+                        <button onclick="startRenameTag('${tag}')"
+                            title="Rinomina tag"
+                            class="py-2 px-2 rounded-r-lg text-[11px] border-y border-r uppercase transition-all
+                            ${active ? 'theme-tag-active' : 'theme-tag-inactive'}"
+                            style="border-left:1px solid rgba(var(--neon-cyan-rgb),0.15);opacity:0.5;"
+                            onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">✎</button>
+                    </div>`;
             }).join('');
+        }
+
+        function startRenameTag(oldTag) {
+            const pill = document.getElementById('tagpill-' + CSS.escape(oldTag));
+            if (!pill) return;
+            const active = archiveSearchTags.has(oldTag);
+            const count = (words.filter(w => w.tags.some(t => t.toLowerCase() === oldTag)).length);
+            pill.innerHTML = `
+                <input id="renameTagInput-${CSS.escape(oldTag)}"
+                    value="${oldTag}"
+                    class="cyber-input rounded-lg text-[11px] font-bold uppercase px-3 py-2"
+                    style="min-width:90px;max-width:160px;border-color:rgba(var(--neon-cyan-rgb),0.7);"
+                    onkeydown="if(event.key==='Enter'){confirmRenameTag('${oldTag}',this.value)}else if(event.key==='Escape'){renderArchiveSearchTags()}"
+                    onblur="setTimeout(()=>confirmRenameTag('${oldTag}',this.value),120)"
+                    autofocus>`;
+            const inp = document.getElementById('renameTagInput-' + CSS.escape(oldTag));
+            if (inp) { inp.focus(); inp.select(); }
+        }
+
+        function confirmRenameTag(oldTag, newRaw) {
+            const newTag = newRaw.trim().toLowerCase();
+            if (!newTag || newTag === oldTag) { renderArchiveSearchTags(); return; }
+            // Rinomina in tutto il database
+            words.forEach(w => {
+                w.tags = w.tags.map(t => t.toLowerCase() === oldTag ? newTag : t);
+                // Deduplica
+                w.tags = [...new Set(w.tags)];
+            });
+            // Aggiorna archiveSearchTags se il tag era attivo
+            if (archiveSearchTags.has(oldTag)) {
+                archiveSearchTags.delete(oldTag);
+                archiveSearchTags.add(newTag);
+            }
+            save();
+            init();
+            showNotification(`TAG RINOMINATO: "${oldTag}" → "${newTag}"`);
         }
 
         function toggleArchiveTag(t) { if(archiveSearchTags.has(t)) archiveSearchTags.delete(t); else archiveSearchTags.add(t); currentPage = 1; renderArchiveSearchTags(); renderTable(); }
@@ -163,7 +221,8 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
             // Ricalcola se le righe hanno altezza variabile (frasi lunghe)
             const modal = document.getElementById('editorModal');
             if (modal && modal.classList.contains('editor-open')) {
-                requestAnimationFrame(calcItemsPerPage);
+                clearTimeout(_calcDebounce);
+                _calcDebounce = setTimeout(calcItemsPerPage, 80);
             }
         }
 
