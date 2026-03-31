@@ -121,6 +121,7 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
                         </button>
                         <button onclick="startRenameTag('${tag}')"
                             title="Rinomina tag"
+                            aria-label="Rinomina tag ${tag}"
                             class="py-2 px-2 rounded-r-lg text-[11px] border-y border-r uppercase transition-all
                             ${active ? 'theme-tag-active' : 'theme-tag-inactive'}"
                             style="border-left:1px solid rgba(var(--neon-cyan-rgb),0.15);opacity:0.5;"
@@ -129,18 +130,20 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
             }).join('');
         }
 
+        let _renameConfirmed = false;
+
         function startRenameTag(oldTag) {
             const pill = document.getElementById('tagpill-' + CSS.escape(oldTag));
             if (!pill) return;
-            const active = archiveSearchTags.has(oldTag);
-            const count = (words.filter(w => w.tags.some(t => t.toLowerCase() === oldTag)).length);
+            _renameConfirmed = false;
             pill.innerHTML = `
                 <input id="renameTagInput-${CSS.escape(oldTag)}"
                     value="${oldTag}"
+                    aria-label="Rinomina tag, premi Invio per confermare o Escape per annullare"
                     class="cyber-input rounded-lg text-[11px] font-bold uppercase px-3 py-2"
                     style="min-width:90px;max-width:160px;border-color:rgba(var(--neon-cyan-rgb),0.7);"
-                    onkeydown="if(event.key==='Enter'){confirmRenameTag('${oldTag}',this.value)}else if(event.key==='Escape'){renderArchiveSearchTags()}"
-                    onblur="setTimeout(()=>confirmRenameTag('${oldTag}',this.value),120)"
+                    onkeydown="if(event.key==='Enter'){_renameConfirmed=true;confirmRenameTag('${oldTag}',this.value)}else if(event.key==='Escape'){_renameConfirmed=true;renderArchiveSearchTags()}"
+                    onblur="if(!_renameConfirmed){_renameConfirmed=true;confirmRenameTag('${oldTag}',this.value)}"
                     autofocus>`;
             const inp = document.getElementById('renameTagInput-' + CSS.escape(oldTag));
             if (inp) { inp.focus(); inp.select(); }
@@ -149,13 +152,10 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
         function confirmRenameTag(oldTag, newRaw) {
             const newTag = newRaw.trim().toLowerCase();
             if (!newTag || newTag === oldTag) { renderArchiveSearchTags(); return; }
-            // Rinomina in tutto il database
             words.forEach(w => {
                 w.tags = w.tags.map(t => t.toLowerCase() === oldTag ? newTag : t);
-                // Deduplica
                 w.tags = [...new Set(w.tags)];
             });
-            // Aggiorna archiveSearchTags se il tag era attivo
             if (archiveSearchTags.has(oldTag)) {
                 archiveSearchTags.delete(oldTag);
                 archiveSearchTags.add(newTag);
