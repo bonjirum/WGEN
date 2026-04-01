@@ -34,6 +34,7 @@ Object.assign(window, {
     loadDefaultDB, closeLoadDefaultModal, confirmLoadDefaultDB,
     toggleArchiveTag, startRenameTag, confirmRenameTag,
     applyPalette,
+    _autoTimer: autoTimer,
     // Funzioni semplici usate dall'HTML
     resetDeck() {
         _resetDeck();
