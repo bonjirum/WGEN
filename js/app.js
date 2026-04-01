@@ -23,7 +23,7 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
                 words = await response.json();
                 save(); init(); resetDeck();
                 showNotification("DATABASE DEFAULT CARICATO");
-            } catch (err) { showNotification("ERR: USA LIVE SERVER PER IL FILE JSON"); }
+            } catch (err) { showNotification("ERRORE: USA LIVE SERVER PER IL FILE JSON"); }
         }
 
         function openEditor() {
@@ -40,7 +40,6 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
 
         let _toastTimeout = null;
         function showNotification(m) {
-            // Rimuovi toast esistente
             const existing = document.querySelector('.cyber-toast');
             if (existing) existing.remove();
             if (_toastTimeout) clearTimeout(_toastTimeout);
@@ -49,7 +48,35 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
             _toastTimeout = setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 1500);
         }
 
-        function resetDeck() { currentDeck = []; showNotification("POOL RESETTATO"); }
+        let _pendingUndo = null;
+
+        function showUndoToast(msg, undoFn) {
+            _pendingUndo = undoFn;
+            const existing = document.querySelector('.cyber-toast');
+            if (existing) existing.remove();
+            if (_toastTimeout) clearTimeout(_toastTimeout);
+            const t = document.createElement('div');
+            t.className = 'cyber-toast cyber-toast--undo animate-fade';
+            t.innerHTML = `<span>${msg}</span><button class="cyber-toast__undo" onclick="_executePendingUndo(this)">ANNULLA</button>`;
+            document.body.appendChild(t);
+            _toastTimeout = setTimeout(() => {
+                _pendingUndo = null;
+                t.style.opacity = '0';
+                setTimeout(() => t.remove(), 400);
+            }, 4000);
+        }
+
+        function _executePendingUndo(btn) {
+            if (!_pendingUndo) return;
+            const fn = _pendingUndo;
+            _pendingUndo = null;
+            clearTimeout(_toastTimeout);
+            const toast = btn.closest('.cyber-toast');
+            if (toast) toast.remove();
+            fn();
+        }
+
+        function resetDeck() { currentDeck = []; showNotification("MAZZO RIMESCOLATO"); }
         function adjustCount(v) {
             const mob = document.getElementById('wordCount');
             const desk = document.getElementById('wordCountDesktop');
@@ -243,7 +270,7 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
             const exists = words.some((w, i) => i !== index && w.text.toLowerCase() === cleanText.toLowerCase());
 
             if (exists) {
-                showNotification("ERRORE: PAROLA GIÀ ESISTENTE");
+                showNotification("ERRORE: VOCE GIÀ ESISTENTE");
                 renderTable(); // Forza il refresh per cancellare il testo duplicato appena scritto
                 return;
             }
@@ -291,13 +318,27 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
             save();
             init();
 
-            showNotification(`AGGIUNTI: ${addedCount} | TAG AGGIORNATI: ${updatedCount}`);
+            showNotification(`AGGIUNTE: ${addedCount} VOCI | TAG AGGIORNATI: ${updatedCount}`);
+        }
+
+        // Ordine personalizzato dei tag filtro — salvato in localStorage
+        let tagOrder = JSON.parse(localStorage.getItem('tagOrder') || 'null') || [];
+
+        function saveTagOrder() {
+            localStorage.setItem('tagOrder', JSON.stringify(tagOrder));
+        }
+
+        function getSortedTags(allTags) {
+            // Metti prima quelli in tagOrder (nell'ordine salvato), poi gli eventuali nuovi in fondo
+            const known = tagOrder.filter(t => allTags.includes(t));
+            const novel = allTags.filter(t => !known.includes(t)).sort();
+            return [...known, ...novel];
         }
 
         function renderTags() {
             const container = document.getElementById('tagFilters');
+            const mob       = document.getElementById('tagFiltersMobile');
 
-            // 1. Contiamo le occorrenze per ogni tag
             const tagCounts = {};
             words.forEach(w => {
                 w.tags.forEach(t => {
@@ -306,23 +347,68 @@ let words = JSON.parse(localStorage.getItem('myWords')) || [];
                 });
             });
 
-            // 2. Otteniamo la lista unica dei tag ordinata
-            const allTags = Object.keys(tagCounts).sort();
+            const allTags    = Object.keys(tagCounts);
+            const sortedTags = getSortedTags(allTags);
 
-            // 3. Generiamo l'HTML con i numeri e lo stile più grande (px-4 py-2 e text-xs)
-            const tagsHtml = allTags.map(t => {
-                const active = activeTags.has(t);
-                const count = tagCounts[t];
-                return `
-                    <button onclick="toggleTag('${t}')"
-                        class="px-4 py-2 rounded-lg text-xs font-bold border uppercase transition-all hover:border-cyan-500
-                        ${active ? 'theme-tag-active' : 'theme-tag-inactive'}">
-                        ${t} (${count})
-                    </button>`;
-            }).join('');
-            container.innerHTML = tagsHtml;
-            const mob = document.getElementById('tagFiltersMobile');
-            if (mob) mob.innerHTML = tagsHtml;
+            // Aggiorna tagOrder rimuovendo tag non più esistenti
+            tagOrder = sortedTags;
+
+            [container, mob].forEach(el => {
+                if (!el) return;
+                el.innerHTML = '';
+                sortedTags.forEach((t, i) => {
+                    const active = activeTags.has(t);
+                    const count  = tagCounts[t];
+                    const btn    = document.createElement('button');
+                    btn.draggable = true;
+                    btn.dataset.tag = t;
+                    btn.className = `px-4 py-2 rounded-lg text-xs font-bold border uppercase transition-all ${active ? 'theme-tag-active' : 'theme-tag-inactive'}`;
+                    btn.style.cursor = 'grab';
+                    btn.textContent = `${t} (${count})`;
+                    btn.onclick = () => toggleTag(t);
+                    _attachFilterDrag(btn, el);
+                    el.appendChild(btn);
+                });
+            });
+        }
+
+        let _filterDragSrc = null;
+
+        function _attachFilterDrag(el, container) {
+            el.addEventListener('dragstart', function(e) {
+                _filterDragSrc = this;
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', this.dataset.tag);
+                this.style.opacity = '0.4';
+            });
+            el.addEventListener('dragend', function() {
+                this.style.opacity = '';
+                container.querySelectorAll('[data-tag]').forEach(b => b.classList.remove('tag-drag-over'));
+            });
+            el.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                if (_filterDragSrc && _filterDragSrc !== this) {
+                    container.querySelectorAll('[data-tag]').forEach(b => b.classList.remove('tag-drag-over'));
+                    this.classList.add('tag-drag-over');
+                }
+            });
+            el.addEventListener('dragleave', function() {
+                this.classList.remove('tag-drag-over');
+            });
+            el.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('tag-drag-over');
+                if (!_filterDragSrc || _filterDragSrc === this) return;
+                const fromTag = e.dataTransfer.getData('text/plain');
+                const toTag   = this.dataset.tag;
+                const fromIdx = tagOrder.indexOf(fromTag);
+                const toIdx   = tagOrder.indexOf(toTag);
+                if (fromIdx === -1 || toIdx === -1) return;
+                tagOrder.splice(fromIdx, 1);
+                tagOrder.splice(toIdx, 0, fromTag);
+                saveTagOrder();
+                renderTags();
+            });
         }
 
         function toggleTag(t) {
@@ -476,7 +562,95 @@ function fitTextToContainer() {
     display.style.paddingBottom = topPad + 'px';
 }
 
-        function exportData() { const dl = document.createElement('a'); dl.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(words))); dl.setAttribute("download", "backup.json"); dl.click(); }
+        function exportData() {
+            // Se non ci sono tag, esporta tutto direttamente
+            const allTags = [...new Set(words.flatMap(w => w.tags.map(t => t.toLowerCase())))].sort();
+            if (allTags.length === 0) { _doExport(words, 'backup.json'); return; }
+            _openExportModal(allTags);
+        }
+
+        function _doExport(data, filename) {
+            const dl = document.createElement('a');
+            dl.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data)));
+            dl.setAttribute('download', filename);
+            dl.click();
+        }
+
+        function _openExportModal(allTags) {
+            // Crea modale se non esiste
+            let modal = document.getElementById('exportModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'exportModal';
+                modal.style.cssText = 'display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.72);align-items:center;justify-content:center;padding:24px;';
+                modal.innerHTML = `
+                    <div style="background:var(--bg-panel);border:1px solid rgba(var(--neon-cyan-rgb),0.3);border-radius:16px;padding:28px;max-width:480px;width:100%;box-shadow:0 0 40px rgba(0,0,0,0.5);max-height:80vh;display:flex;flex-direction:column;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                            <h3 style="font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:var(--neon-cyan);">Esporta per Tag</h3>
+                            <button onclick="document.getElementById('exportModal').style.display='none'" style="font-family:'Rajdhani',sans-serif;width:32px;height:32px;border-radius:50%;border:1px solid rgba(var(--neon-cyan-rgb),0.3);background:none;color:var(--neon-cyan);font-size:1.1rem;cursor:pointer;opacity:0.6;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">×</button>
+                        </div>
+                        <div style="display:flex;gap:8px;margin-bottom:12px;flex-shrink:0;">
+                            <button onclick="_exportSelectAll(true)" class="cyber-button py-1 text-[10px] flex-1">Seleziona tutto</button>
+                            <button onclick="_exportSelectAll(false)" class="cyber-button py-1 text-[10px] flex-1">Deseleziona tutto</button>
+                        </div>
+                        <div id="exportTagList" style="flex:1;overflow-y:auto;display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;padding:4px 0;margin-bottom:16px;"></div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:10px;border-top:1px solid rgba(var(--neon-cyan-rgb),0.1);padding-top:14px;">
+                            <span id="exportCount" style="font-family:'Rajdhani',sans-serif;font-size:0.7rem;font-weight:700;color:var(--neon-cyan);opacity:0.6;"></span>
+                            <div style="display:flex;gap:8px;">
+                                <button onclick="document.getElementById('exportModal').style.display='none'" class="cyber-button px-6 py-2 text-xs">Annulla</button>
+                                <button onclick="_confirmExport()" class="cyber-button button-primary px-6 py-2 text-xs">Scarica JSON</button>
+                            </div>
+                        </div>
+                    </div>`;
+                document.body.appendChild(modal);
+            }
+
+            // Popola la lista tag con checkbox
+            const list = modal.querySelector('#exportTagList');
+            list.innerHTML = allTags.map(tag => {
+                const count = words.filter(w => w.tags.some(t => t.toLowerCase() === tag)).length;
+                return `
+                    <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:6px 10px;border-radius:8px;border:1px solid rgba(var(--neon-cyan-rgb),0.2);background:rgba(var(--neon-cyan-rgb),0.04);transition:background 0.15s;" onmouseover="this.style.background='rgba(var(--neon-cyan-rgb),0.1)'" onmouseout="this.style.background='rgba(var(--neon-cyan-rgb),0.04)'">
+                        <input type="checkbox" class="export-tag-cb" value="${tag}" checked style="accent-color:var(--neon-cyan);width:13px;height:13px;cursor:pointer;" onchange="_updateExportCount()">
+                        <span style="font-family:'Rajdhani',sans-serif;font-size:0.65rem;font-weight:700;text-transform:uppercase;color:var(--neon-cyan);">${tag}</span>
+                        <span style="font-family:'Rajdhani',sans-serif;font-size:0.6rem;color:var(--neon-cyan);opacity:0.4;">(${count})</span>
+                    </label>`;
+            }).join('');
+
+            _updateExportCount();
+            modal.style.display = 'flex';
+        }
+
+        function _exportSelectAll(checked) {
+            document.querySelectorAll('.export-tag-cb').forEach(cb => cb.checked = checked);
+            _updateExportCount();
+        }
+
+        function _updateExportCount() {
+            const selected = [...document.querySelectorAll('.export-tag-cb:checked')].map(cb => cb.value);
+            const mode = selected.length === document.querySelectorAll('.export-tag-cb').length ? 'tutti' : null;
+            const count = mode === 'tutti'
+                ? words.length
+                : words.filter(w => w.tags.some(t => selected.includes(t.toLowerCase()))).length;
+            const el = document.getElementById('exportCount');
+            if (el) el.textContent = mode === 'tutti'
+                ? `${count} voci (database completo)`
+                : `${count} voci selezionate`;
+        }
+
+        function _confirmExport() {
+            const allCbs = document.querySelectorAll('.export-tag-cb');
+            const selected = [...document.querySelectorAll('.export-tag-cb:checked')].map(cb => cb.value);
+            const isAll = selected.length === allCbs.length;
+            const data = isAll
+                ? words
+                : words.filter(w => w.tags.some(t => selected.includes(t.toLowerCase())));
+            if (data.length === 0) { showNotification('NESSUNA VOCE DA ESPORTARE'); return; }
+            const filename = isAll ? 'backup-completo.json' : `backup-${selected.join('-')}.json`;
+            _doExport(data, filename);
+            document.getElementById('exportModal').style.display = 'none';
+            showNotification(`ESPORTATE ${data.length} VOCI`);
+        }
         function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -717,12 +891,16 @@ function fitTextToContainer() {
 
         function deleteMobileDetail() {
             if (_mobileDetailIndex < 0) return;
-            words.splice(_mobileDetailIndex, 1);
-            save();
-            init();
-            resetDeck();
-            showNotification('VOCE ELIMINATA');
+            const deletedWord = { ...words[_mobileDetailIndex], tags: [...words[_mobileDetailIndex].tags] };
+            const deletedIdx = _mobileDetailIndex;
+            words.splice(deletedIdx, 1);
+            save(); init(); resetDeck();
             closeMobileDetail();
+            showUndoToast('VOCE ELIMINATA', function() {
+                words.splice(deletedIdx, 0, deletedWord);
+                save(); init(); resetDeck();
+                showNotification('ELIMINAZIONE ANNULLATA');
+            });
         }
 
         function closeMobileDetail() {
@@ -813,12 +991,16 @@ function fitTextToContainer() {
 
         function deleteDesktopEdit() {
             if (_desktopEditIndex < 0) return;
-            words.splice(_desktopEditIndex, 1);
-            save();
-            init();
-            resetDeck();
-            showNotification('VOCE ELIMINATA');
+            const deletedWord = { ...words[_desktopEditIndex], tags: [...words[_desktopEditIndex].tags] };
+            const deletedIdx = _desktopEditIndex;
+            words.splice(deletedIdx, 1);
+            save(); init(); resetDeck();
             closeDesktopEdit();
+            showUndoToast('VOCE ELIMINATA', function() {
+                words.splice(deletedIdx, 0, deletedWord);
+                save(); init(); resetDeck();
+                showNotification('ELIMINAZIONE ANNULLATA');
+            });
         }
 
         function closeDesktopEdit() {
@@ -833,6 +1015,13 @@ function fitTextToContainer() {
             if(e.code === 'Space' && !isEditing) {
                 e.preventDefault();
                 generate();
+            }
+            // ESC chiude il modale export se aperto
+            if (e.key === 'Escape') {
+                const exportModal = document.getElementById('exportModal');
+                if (exportModal && exportModal.style.display === 'flex') {
+                    exportModal.style.display = 'none';
+                }
             }
         });
         document.getElementById('newTags').addEventListener('input', updateQuickSelect);
@@ -1060,7 +1249,7 @@ function fitTextToContainer() {
                 ['timerToggleBtn', 'timerToggleBtnDesktop'].forEach(id => {
                     const btn = document.getElementById(id);
                     if (!btn) return;
-                    btn.textContent = on ? 'STOP' : 'AVVIA';
+                    btn.textContent = on ? 'FERMA' : 'AVVIA';
                     if (on) { btn.classList.add('button-primary'); }
                     else    { btn.classList.remove('button-primary'); }
                 });

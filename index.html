@@ -67,7 +67,7 @@
                         </div>
                         <button onclick="generate()" class="cyber-button button-primary px-12 py-4 text-lg flex-1 sm:flex-none h-[58px]">GENERA</button>
                     </div>
-                    <button onclick="resetDeck()" class="cyber-button px-8 py-4 text-xs h-[58px] w-full sm:w-auto">SHUFFLE</button>
+                    <button onclick="resetDeck()" class="cyber-button px-8 py-4 text-xs h-[58px] w-full sm:w-auto">RIMESCOLA</button>
                 </div>
             </div>
 
@@ -93,16 +93,16 @@
                         </div>
                     </div>
 
-                    <button onclick="openEditor()" class="cyber-button w-full py-4 text-sm">Apri Database</button>
+                    <button onclick="openEditor()" class="cyber-button w-full py-4 text-sm">Apri Archivio</button>
                     <div class="grid grid-cols-2 gap-4">
-                        <button onclick="exportData()" class="cyber-button py-2 text-[10px]">Export</button>
-                        <button onclick="document.getElementById('importFile').click()" class="cyber-button py-2 text-[10px]">Import</button>
+                        <button onclick="exportData()" class="cyber-button py-2 text-[10px]">Esporta</button>
+                        <button onclick="document.getElementById('importFile').click()" class="cyber-button py-2 text-[10px]">Importa</button>
                     </div>
-                    <button onclick="loadDefaultDB()" class="cyber-button button-orange w-full py-3 text-[10px] border-dashed">Carica DB Default</button>
+                    <button onclick="loadDefaultDB()" class="cyber-button button-orange w-full py-3 text-[10px] border-dashed">Carica Archivio Default</button>
                     <a href="https://github.com/bonjirum/WGEN/blob/master/README.md" target="_blank" class="cyber-button button-green w-full py-3 text-[10px] mt-2">
-                        MANUALE
+                        GUIDA
                     </a>
-                    <button onclick="confirmClearDatabase()" class="cyber-button w-full py-3 text-[10px]" style="color:#ff2e63;border-color:rgba(255,46,99,0.3);">Cancella Database</button>
+                    <button onclick="confirmClearDatabase()" class="cyber-button w-full py-3 text-[10px]" style="color:#ff2e63;border-color:rgba(255,46,99,0.3);">Cancella Archivio</button>
                     <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
                 </div>
             </div>
@@ -135,7 +135,7 @@
         <div class="mb-3">
             <div class="flex items-center justify-between mb-2">
                 <h3 class="text-[10px] theme-label font-bold uppercase tracking-widest">Filtri Categoria</h3>
-                <button onclick="resetDeck();closeDrawer();" class="cyber-button px-3 py-1 text-[10px]">Shuffle</button>
+                <button onclick="resetDeck();closeDrawer();" class="cyber-button px-3 py-1 text-[10px]">Rimescola</button>
             </div>
             <div id="tagFiltersMobile" class="flex flex-wrap gap-2"></div>
         </div>
@@ -158,21 +158,21 @@
 
         <div style="height:1px;background:rgba(var(--neon-cyan-rgb),0.1);margin:10px 0;"></div>
         <div class="flex flex-col gap-2">
-            <button onclick="openEditor();closeDrawer();" class="cyber-button w-full py-3 text-sm">Apri Database</button>
+            <button onclick="openEditor();closeDrawer();" class="cyber-button w-full py-3 text-sm">Apri Archivio</button>
             <div class="grid grid-cols-2 gap-2">
-                <button onclick="exportData()" class="cyber-button py-2 text-[10px]">Export</button>
-                <button onclick="document.getElementById('importFile').click()" class="cyber-button py-2 text-[10px]">Import</button>
+                <button onclick="exportData()" class="cyber-button py-2 text-[10px]">Esporta</button>
+                <button onclick="document.getElementById('importFile').click()" class="cyber-button py-2 text-[10px]">Importa</button>
             </div>
-            <button onclick="loadDefaultDB()" class="cyber-button button-orange w-full py-2 text-[10px] border-dashed">Carica DB Default</button>
-            <a href="https://github.com/bonjirum/WGEN/blob/master/README.md" target="_blank" class="cyber-button button-green w-full py-2 text-[10px]">MANUALE</a>
-            <button onclick="confirmClearDatabase()" class="cyber-button w-full py-2 text-[10px]" style="color:#ff2e63;border-color:rgba(255,46,99,0.3);">Cancella Database</button>
+            <button onclick="loadDefaultDB()" class="cyber-button button-orange w-full py-2 text-[10px] border-dashed">Carica Archivio Default</button>
+            <a href="https://github.com/bonjirum/WGEN/blob/master/README.md" target="_blank" class="cyber-button button-green w-full py-2 text-[10px]">GUIDA</a>
+            <button onclick="confirmClearDatabase()" class="cyber-button w-full py-2 text-[10px]" style="color:#ff2e63;border-color:rgba(255,46,99,0.3);">Cancella Archivio</button>
         </div>
     </div>
 
     <div id="editorModal">
         <div class="max-w-6xl mx-auto">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-3xl font-bold theme-label uppercase tracking-widest">Database Editor</h2>
+                <h2 class="text-3xl font-bold theme-label uppercase tracking-widest">Archivio Voci</h2>
                 <button onclick="closeEditor()" class="w-12 h-12 flex items-center justify-center rounded-full text-2xl theme-border" style="border:1px solid;color:var(--neon-pink);opacity:0.6;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">×</button>
             </div>
 
@@ -207,7 +207,7 @@
                             <tr>
                                 <th class="p-4 theme-muted font-bold uppercase text-[10px]">Entità</th>
                                 <th class="p-4 theme-muted font-bold uppercase text-[10px]">Tag</th>
-                                <th class="p-4 text-right theme-muted font-bold uppercase text-[10px]">Azione</th>
+                                <th class="p-4 text-right theme-muted font-bold uppercase text-[10px]">Azioni</th>
                             </tr>
                         </thead>
                         <tbody id="wordTableBody" class="theme-divide text-sm font-mono"></tbody>
@@ -250,7 +250,7 @@
         <div style="background:var(--bg-panel);border:1px solid rgba(255,46,99,0.4);border-radius:16px;padding:28px;max-width:360px;width:100%;">
             <h3 style="font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#ff2e63;margin-bottom:12px;">⚠ Attenzione</h3>
             <p style="font-family:'Rajdhani',sans-serif;font-size:0.85rem;color:rgba(255,255,255,0.7);line-height:1.5;margin-bottom:20px;">
-                Stai per eliminare <strong style="color:#fff;">l'intero database</strong> salvato in locale.<br>
+                Stai per eliminare <strong style="color:#fff;">l'intero archivio</strong> salvato in locale.<br>
                 Questa operazione è <strong style="color:#ff2e63;">irreversibile</strong> e non può essere annullata.
             </p>
             <div style="display:flex;gap:10px;">
