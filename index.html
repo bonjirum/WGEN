@@ -260,6 +260,21 @@
         </div>
     </div>
 
+    <!-- Modale conferma carica archivio default -->
+    <div id="loadDefaultDbModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:24px;">
+        <div style="background:var(--bg-panel);border:1px solid rgba(249,115,22,0.4);border-radius:16px;padding:28px;max-width:360px;width:100%;">
+            <h3 style="font-family:'Rajdhani',sans-serif;font-size:1rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#f97316;margin-bottom:12px;">⚠ Attenzione</h3>
+            <p style="font-family:'Rajdhani',sans-serif;font-size:0.85rem;color:rgba(255,255,255,0.7);line-height:1.5;margin-bottom:20px;">
+                Stai per <strong style="color:#fff;">sovrascrivere l'archivio attuale</strong> con il database di default.<br>
+                Tutte le voci personalizzate andranno <strong style="color:#f97316;">perse definitivamente</strong>.
+            </p>
+            <div style="display:flex;gap:10px;">
+                <button onclick="closeLoadDefaultModal()" class="cyber-button flex-1 py-3 text-sm" style="flex:1;">Annulla</button>
+                <button onclick="confirmLoadDefaultDB()" style="flex:1;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.06em;padding:12px;border-radius:10px;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;cursor:pointer;">Carica Default</button>
+            </div>
+        </div>
+    </div>
+
     <!-- DESKTOP: modale modifica voce -->
     <div id="desktopEditModal" style="display:none;position:fixed;inset:0;z-index:250;background:rgba(0,0,0,0.65);align-items:center;justify-content:center;padding:24px;">
         <div style="background:var(--bg-panel);border:1px solid rgba(var(--neon-cyan-rgb),0.3);border-radius:16px;padding:28px;max-width:520px;width:100%;box-shadow:0 0 40px rgba(0,0,0,0.5);">

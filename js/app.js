@@ -1,7 +1,7 @@
 // ── ENTRY POINT ───────────────────────────────────────────────────────────────
-import { state, resetDeck as _resetDeck }                      from './state.js';
+import { state, setState, saveWords, resetDeck as _resetDeck } from './state.js';
 import { buildPaletteSelectors, applyPalette }                 from './palette.js';
-import { generate as _generate }                               from './generate.js';
+import { generate as _generate, fitTextToContainer }           from './generate.js';
 import { autoTimer, initTimerUI }                              from './timer.js';
 import {
     initUI, renderTags, renderTable, showNotification,
@@ -17,10 +17,11 @@ import {
     saveMobileDetail, deleteMobileDetail,
     confirmClearDatabase, closeClearModal, clearDatabase,
     exportData, importData, toggleDrawer, closeDrawer, initDrawerDrag,
-    loadDefaultDB,
+    loadDefaultDB, closeLoadDefaultModal, confirmLoadDefaultDB,
 } from './editor.js';
 
 // ── ESPONI GLOBALI per gli onclick inline nell'HTML ───────────────────────────
+// (Il refactoring non tocca l'HTML, quindi i handler inline devono restare globali)
 Object.assign(window, {
     openEditor, closeEditor, addWordsBulk, prevPage, nextPage,
     handleTableSearch, clearSearch, toggleAddSection,
@@ -30,12 +31,9 @@ Object.assign(window, {
     saveMobileDetail, deleteMobileDetail,
     confirmClearDatabase, closeClearModal, clearDatabase,
     exportData, importData, toggleDrawer, closeDrawer,
-    loadDefaultDB,
+    loadDefaultDB, closeLoadDefaultModal, confirmLoadDefaultDB,
     toggleArchiveTag, startRenameTag, confirmRenameTag,
     applyPalette,
-    // Esposto con underscore per compatibilità con gli onclick inline nell'HTML
-    // che chiamano _autoTimer.toggle(), _autoTimer.active, ecc.
-    _autoTimer: autoTimer,
     // Funzioni semplici usate dall'HTML
     resetDeck() {
         _resetDeck();

@@ -442,12 +442,22 @@ export function initDrawerDrag() {
 
 // ── DB DEFAULT ────────────────────────────────────────────────────────────────
 
-export async function loadDefaultDB() {
+export function loadDefaultDB() {
+    document.getElementById('loadDefaultDbModal').style.display = 'flex';
+    closeDrawer();
+}
+
+export function closeLoadDefaultModal() {
+    document.getElementById('loadDefaultDbModal').style.display = 'none';
+}
+
+export async function confirmLoadDefaultDB() {
+    closeLoadDefaultModal();
     try {
         const response = await fetch('db-argomenti-v1.json');
         if (!response.ok) throw new Error();
         state.words = await response.json();
         saveWords(); initUI(); resetDeck();
-        showNotification('DATABASE DEFAULT CARICATO');
+        showNotification('ARCHIVIO DEFAULT CARICATO');
     } catch { showNotification('ERRORE: USA LIVE SERVER PER IL FILE JSON'); }
 }
