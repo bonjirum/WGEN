@@ -103,5 +103,5 @@ initDrawerDrag();
 initTimerUI();
 initTableResizeObserver();
 
-if (state.words.length === 0) loadDefaultDB();
+if (state.words.length === 0) loadDefaultDB(true);
 else initUI();

@@ -442,7 +442,8 @@ export function initDrawerDrag() {
 
 // ── DB DEFAULT ────────────────────────────────────────────────────────────────
 
-export function loadDefaultDB() {
+export function loadDefaultDB(silent = false) {
+    if (silent) { confirmLoadDefaultDB(); return; }
     document.getElementById('loadDefaultDbModal').style.display = 'flex';
     closeDrawer();
 }
