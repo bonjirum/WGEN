@@ -65,6 +65,16 @@
             --bg-panel: #0a1120;
             --topbar-h: 46px;
             --bottombar-h: 68px;
+            /* Valori default condivisi (cyberpunk è il tema base) */
+            --grad-rgb-1: 0, 255, 242;
+            --grad-rgb-2: 188, 19, 254;
+            --alt-color: #ffffff;
+            --title-grad: linear-gradient(to right, #00fff2 0%, white 50%, #ff00ff 100%);
+            --neon-pink-dark: #c000c0;
+            --neon-pink-glow: rgba(255,0,255,0.45);
+            --btn-primary-text: #fff;
+            --ui-active: #00fff2;
+            --ui-active-rgb: 0,255,242;
         }
 
         /* PALETTE: RETROWAVE */
@@ -82,6 +92,8 @@
             --neon-pink-dark: #c55a10;
             --neon-pink-glow: rgba(246,125,49,0.45);
             --btn-primary-text: #fff;
+            --ui-active: #DE1A58;
+            --ui-active-rgb: 222,26,88;
         }
 
         /* PALETTE: SWITCH */
@@ -99,8 +111,9 @@
             --neon-pink-dark: #c0003d;
             --neon-pink-glow: rgba(255,46,99,0.45);
             --btn-primary-text: #fff;
+            --ui-active: #08D9D6;
+            --ui-active-rgb: 8,217,214;
         }
-
 
         /* PALETTE: CIOCCOLATO */
         :root[data-palette="cioccolato"] {
@@ -117,6 +130,8 @@
             --neon-pink-dark: #8C5A3C;
             --neon-pink-glow: rgba(192,133,82,0.45);
             --btn-primary-text: #FFF8F0;
+            --ui-active: #FFF8F0;
+            --ui-active-rgb: 255,248,240;
         }
 
         /* PALETTE: HALLOWEEN */
@@ -134,6 +149,8 @@
             --neon-pink-dark: #c55a00;
             --neon-pink-glow: rgba(250,129,18,0.45);
             --btn-primary-text: #111;
+            --ui-active: #FA8112;
+            --ui-active-rgb: 250,129,18;
         }
 
         /* PALETTE: PASTELLO */
@@ -151,6 +168,8 @@
             --neon-pink-dark: #b07aa0;
             --neon-pink-glow: rgba(221,174,211,0.45);
             --btn-primary-text: #213C51;
+            --ui-active: #DDAED3;
+            --ui-active-rgb: 221,174,211;
         }
 
         /* PALETTE: GIUNGLA */
@@ -168,6 +187,8 @@
             --neon-pink-dark: #40513B;
             --neon-pink-glow: rgba(96,153,102,0.45);
             --btn-primary-text: #EDF1D6;
+            --ui-active: #9DC08B;
+            --ui-active-rgb: 157,192,139;
         }
 
         /* PALETTE: ELETTRICO */
@@ -185,6 +206,8 @@
             --neon-pink-dark: #c9a800;
             --neon-pink-glow: rgba(244,206,20,0.45);
             --btn-primary-text: #1c1d1f;
+            --ui-active: #F4CE14;
+            --ui-active-rgb: 244,206,20;
         }
 
         /* PALETTE: CARAMELLA */
@@ -202,6 +225,8 @@
             --neon-pink-dark: #cc0055;
             --neon-pink-glow: rgba(255,63,127,0.45);
             --btn-primary-text: #fff;
+            --ui-active: #FF3F7F;
+            --ui-active-rgb: 255,63,127;
         }
 
         /* PALETTE: FERRARI */
@@ -224,15 +249,24 @@
             --ui-active: #FF2244;
             --ui-active-rgb: 255,34,68;
         }
-        /* PALETTE: CYBERPUNK  */
-        :root[data-palette="cyberpunk"], :root {
+
+        /* PALETTE: CYBERPUNK */
+        :root[data-palette="cyberpunk"] {
             --grad-rgb-1: 0, 255, 242;
             --grad-rgb-2: 188, 19, 254;
+            --neon-cyan: #00fff2;
+            --neon-cyan-rgb: 0,255,242;
+            --neon-pink: #ff00ff;
+            --bg-dark: #050b14;
+            --bg-drawer: #0d1626;
+            --bg-panel: #0a1120;
             --alt-color: #ffffff;
-            --title-grad: linear-gradient(to right, var(--neon-cyan) 0%, white 50%, var(--neon-pink) 100%);
+            --title-grad: linear-gradient(to right, #00fff2 0%, white 50%, #ff00ff 100%);
             --neon-pink-dark: #c000c0;
             --neon-pink-glow: rgba(255,0,255,0.45);
             --btn-primary-text: #fff;
+            --ui-active: #00fff2;
+            --ui-active-rgb: 0,255,242;
         }
 
 
@@ -261,7 +295,7 @@
             backdrop-filter: blur(5px);
         }
 
-        /* --- STILE KBD (RIPRISTINATO) --- */
+        /* --- STILE KBD --- */
         kbd {
             display: inline-block;
             padding: 2px 10px;
@@ -390,8 +424,6 @@
             color: #fff !important;
         }
 
-        /* #editorModal gestito dal blocco sotto */
-
         .cyber-input {
             background: rgba(var(--neon-cyan-rgb, 0,255,242), 0.03) !important;
             border: 1px solid rgba(var(--neon-cyan-rgb, 0,255,242), 0.15) !important;
@@ -495,7 +527,6 @@
         @media (min-width: 1024px) {
             #mobileTopbar, #mobileBottombar, #drawer, #drawerOverlay { display: none !important; }
             body { display: block; }
-            /* displayArea torna statico e va nel grid tramite JS */
         }
         .palette-select {
             background: var(--bg-dark) !important;
@@ -515,7 +546,6 @@
 
         /* ══ EDITOR MODAL ══ */
 
-        /* Base: nascosto */
         #editorModal {
             display: none !important;
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -553,14 +583,12 @@
 
         /* ══ MOBILE TABLE OVERRIDES ══ */
         @media (max-width: 1023px) {
-            /* Nascondi colonne TAG e AZIONE nell'header */
             #tableContainer thead th:nth-child(2),
             #tableContainer thead th:nth-child(3) { display: none; }
 
-            /* Righe mobile: prima cella occupa tutto, seconda cella è la freccia */
             #wordTableBody td:first-child {
                 width: 100%;
-                max-width: 1px; /* trucco per text-overflow in table */
+                max-width: 1px;
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
@@ -575,12 +603,12 @@
                 overflow: visible;
                 text-overflow: clip;
             }
-            /* Nascondi eventuale terza colonna */
             #wordTableBody td:nth-child(3) { display: none; }
         }
 
-                .animate-fade { animation: bounce-in 0.3s ease-out; }
+        .animate-fade { animation: bounce-in 0.3s ease-out; }
         @keyframes bounce-in { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
+
         /* ══ THEME-AWARE UTILITY CLASSES ══ */
 
         /* Testi */
@@ -607,11 +635,11 @@
         }
         /* Filtri categoria — stato attivo */
         .theme-tag-active {
-            background: rgba(var(--ui-active-rgb, var(--neon-cyan-rgb)),0.15);
-            color: var(--ui-active, var(--neon-cyan));
-            border-color: rgba(var(--ui-active-rgb, var(--neon-cyan-rgb)),0.7);
+            background: rgba(var(--ui-active-rgb),0.15);
+            color: var(--ui-active);
+            border-color: rgba(var(--ui-active-rgb),0.7);
             opacity: 1;
-            box-shadow: 0 0 10px rgba(var(--ui-active-rgb, var(--neon-cyan-rgb)),0.25);
+            box-shadow: 0 0 10px rgba(var(--ui-active-rgb),0.25);
         }
 
         /* Drag-over sui filtri tag */
@@ -646,7 +674,6 @@
 
         /* ══ EDITOR: righe fisse, no scroll mai, pagination fissa ══ */
 
-        /* Righe SEMPRE fisse a 52px — testo troncato se overflow */
         #wordTableBody tr { height: 52px; }
         #wordTableBody td {
             height: 52px;
@@ -654,13 +681,10 @@
             white-space: nowrap;
             text-overflow: ellipsis;
             vertical-align: middle;
-            max-width: 0; /* forza il trucco del trucamento nelle celle table */
+            max-width: 0;
         }
-        /* Prima colonna: entità */
         #wordTableBody td:first-child { width: 35%; }
-        /* Seconda colonna: tag */
         #wordTableBody td:nth-child(2) { width: 50%; }
-        /* Terza colonna: azione */
         #wordTableBody td:nth-child(3) { width: 15%; max-width: none; }
 
         #wordTableBody [contenteditable] {
@@ -677,7 +701,6 @@
             position: relative;
             z-index: 1;
         }
-        /* Tag chips: mai a capo */
         #wordTableBody td:nth-child(2) > div {
             display: flex;
             flex-wrap: nowrap;
@@ -686,30 +709,26 @@
             align-items: center;
         }
 
-        /* Nessuno scroll mai sulla tabella */
         #tableContainer .overflow-x-auto { overflow: hidden !important; }
 
-        /* tableContainer: flex column, non scrolla mai */
         #tableContainer {
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        /* Pagination: sempre in fondo, posizione fissa */
         #paginationBar {
             flex-shrink: 0;
             margin-top: 12px;
         }
 
         @media (max-width: 1023px) {
-
             #addSection.add-open ~ #tableContainer {
                 display: none !important;
             }
         }
 
-        /* ══ MOBILE DETAIL SCREEN (proposta B) ══ */
+        /* ══ MOBILE DETAIL SCREEN ══ */
         #mobileDetailScreen {
             display: none;
             position: absolute;
@@ -764,13 +783,11 @@
             flex-shrink: 0;
         }
 
-        /* Mobile: lista semplificata — solo entità + freccia */
         @media (max-width: 1023px) {
             #editorModal {
                 position: fixed;
                 overflow: hidden;
             }
-
         }
         @media (min-width: 1024px) {
             #mobileDetailScreen { display: none !important; }
